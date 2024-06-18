@@ -13,7 +13,6 @@ import SwiftUI
 
 enum ScrollViewAction {
 	case idle
-	case offset(_ offset: CGFloat, animated: Bool)
 	case page(_ page: Int, animated: Bool)
 }
 
@@ -72,24 +71,17 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
 		scrollView.updateView(content: content)
 
-		func scrollTo(_ offset: CGFloat, animated: Bool) {
-			scrollView.setContentOffset(CGPoint(x: axis == .horizontal ? offset : 0, y: axis == .vertical ? offset : 0), animated: animated)
-			Task {
-				action = .idle
-			}
-		}
-
 		switch action {
 			case .idle:
 				break
 
-			case .offset(let offset, let animated):
-				scrollTo(offset, animated: animated)
-
 			case .page(let page, let animated):
 				DispatchQueue.main.async {
 					let offset = Double(page) * (axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height)
-					scrollTo(offset, animated: animated)
+					scrollView.setContentOffset(CGPoint(x: axis == .horizontal ? offset : 0, y: axis == .vertical ? offset : 0), animated: animated)
+					Task {
+						action = .idle
+					}
 				}
 		}
 	}
