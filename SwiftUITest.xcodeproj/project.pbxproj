@@ -8,17 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		361431ED2BB6891800FA71B4 /* SwiftUITestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EC2BB6891800FA71B4 /* SwiftUITestApp.swift */; };
-		361431EF2BB6891800FA71B4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EE2BB6891800FA71B4 /* ContentView.swift */; };
+		361431EF2BB6891800FA71B4 /* PagingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EE2BB6891800FA71B4 /* PagingScrollView.swift */; };
 		361431F12BB6891A00FA71B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F02BB6891900FA71B4 /* Assets.xcassets */; };
 		361431F42BB6891A00FA71B4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */; };
+		36CCB5642C2210A000E84714 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36CCB5632C2210A000E84714 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		361431E92BB6891800FA71B4 /* SwiftUITest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUITest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		361431EC2BB6891800FA71B4 /* SwiftUITestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUITestApp.swift; sourceTree = "<group>"; };
-		361431EE2BB6891800FA71B4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		361431EE2BB6891800FA71B4 /* PagingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingScrollView.swift; sourceTree = "<group>"; };
 		361431F02BB6891900FA71B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		36CCB5632C2210A000E84714 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,8 +53,9 @@
 		361431EB2BB6891800FA71B4 /* SwiftUITest */ = {
 			isa = PBXGroup;
 			children = (
+				361431EE2BB6891800FA71B4 /* PagingScrollView.swift */,
+				36CCB5632C2210A000E84714 /* ContentView.swift */,
 				361431EC2BB6891800FA71B4 /* SwiftUITestApp.swift */,
-				361431EE2BB6891800FA71B4 /* ContentView.swift */,
 				361431F02BB6891900FA71B4 /* Assets.xcassets */,
 				361431F22BB6891A00FA71B4 /* Preview Content */,
 			);
@@ -137,8 +140,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				361431EF2BB6891800FA71B4 /* ContentView.swift in Sources */,
+				361431EF2BB6891800FA71B4 /* PagingScrollView.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUITestApp.swift in Sources */,
+				36CCB5642C2210A000E84714 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +209,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Debug;
 		};
@@ -260,6 +265,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
