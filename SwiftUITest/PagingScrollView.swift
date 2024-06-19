@@ -17,7 +17,7 @@ enum ScrollViewAction {
 }
 
 
-struct ScrollViewState {
+struct ScrollViewState: Equatable {
 	var view: UIScrollView?
 	var page: Int = 0
 }
