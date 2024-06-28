@@ -8,7 +8,18 @@
 import SwiftUI
 
 
-// Scroll view with paging that exposes its underlying UIKit view. Can be used for e.g. installing gesture recognizers that are impossible in pure SwiftUI.
+// This is a SwiftUI wrapper around UIScrollView that provides the paging functionality (scroll and snap to a page the
+// size of the view itself) for iOS versions prior to 17. Tested on iOS 16 with Swift 5.10.
+//
+// Use the binding `action` argument to move the scroller to a specified position. The binding `state` argument is for
+// the scroller's feedback: it returns the underlying UIScrollView object in case you need to additionally configure it,
+// and also the current page number which is updated as the user drags the scroller.
+//
+// The `removesSafeArea()` modifier is an important addition to scrollers that cover the entire screen since SwiftUI's
+// own `ignoresSafeArea()` can't remove all safe area treatment from the scroller. You can play with the preview at the
+// bottom of this file to see how these two modifiers affect the scroller.
+//
+// (And sorry for the tabs, I like them though I know those who use spaces earn more money on average 😜)
 
 
 enum ScrollViewAction {
@@ -78,7 +89,11 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 			case .page(let page, let animated):
 				DispatchQueue.main.async {
 					let offset = Double(page) * (axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height)
+					let size = axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height
 					scrollView.setContentOffset(CGPoint(x: axis == .horizontal ? offset : 0, y: axis == .vertical ? offset : 0), animated: animated)
+					if size > 0 {
+						state.page = Int(round(offset / size))
+					}
 					Task {
 						action = .idle
 					}
@@ -92,7 +107,7 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	}
 
 
-	class Coordinator: NSObject, UIScrollViewDelegate {
+	final class Coordinator: NSObject, UIScrollViewDelegate {
 		let parent: PagingScrollView
 
 		init(_ parent: PagingScrollView) {
@@ -101,7 +116,8 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 
 		func scrollViewDidScroll(_ scrollView: UIScrollView) {
 			let size = parent.axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height
-			if size > 0 {
+			if size > 0, scrollView.isTracking || scrollView.isDragging || scrollView.isDecelerating {
+				// Triggered only if interactive
 				Task {
 					let offset = parent.axis == .horizontal ? scrollView.contentOffset.x : scrollView.contentOffset.y
 					parent.state.page = Int(round(offset / size))
@@ -111,7 +127,7 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	}
 
 
-	class HostedScrollView: UIScrollView {
+	final class HostedScrollView: UIScrollView {
 		private let host: UIHostingController<Content>
 		private let ignoreSafeArea: Bool
 
