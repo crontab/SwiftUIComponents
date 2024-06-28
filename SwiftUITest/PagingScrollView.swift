@@ -8,16 +8,21 @@
 import SwiftUI
 
 
-// This is a SwiftUI wrapper around UIScrollView that provides the paging functionality (scroll and snap to a page the
-// size of the view itself) for iOS versions prior to 17. Tested on iOS 16 with Swift 5.10.
+// This is a SwiftUI wrapper around UIScrollView that provides paging functionality (scroll and snap to a page the size
+// of the view itself) for iOS versions prior to 17. Tested on iOS 16 with Swift 5.10.
 //
 // Use the binding `action` argument to move the scroller to a specified position. The binding `state` argument is for
-// the scroller's feedback: it returns the underlying UIScrollView object in case you need to additionally configure it,
-// and also the current page number which is updated as the user drags the scroller.
+// the scroller's feedback: it returns the underlying UIScrollView object in case you need to additionally configure
+// it, and also the current page number which is updated as the user drags the scroller.
 //
 // The `removesSafeArea()` modifier is an important addition to scrollers that cover the entire screen since SwiftUI's
 // own `ignoresSafeArea()` can't remove all safe area treatment from the scroller. You can play with the preview at the
 // bottom of this file to see how these two modifiers affect the scroller.
+//
+// `LazyPage()` provides a lazy rendering mechanism for PagingScrollView. You can wrap the contents of each page into
+// this view, presumably within a `ForEach()` loop. The reason this component exists is that `LazyXView()` standard
+// components don't work as intended under our PagingScrollView, since they expect the parent view to be SwiftUI's
+// native `ScrollView` instead.
 //
 // (And sorry for the tabs, I like them though I know those who use spaces earn more money on average 😜)
 
@@ -147,6 +152,50 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 			host.rootView = content()
 			host.view.sizeToFit()
 			contentSize = host.view.bounds.size
+		}
+	}
+}
+
+
+// MARK: Lazy page for PagingScrollView
+
+struct LazyPage<C: View>: View {
+	private let parentFrame: CGRect
+	private let content: () -> C
+
+	@State private var isVisible: Bool = false
+
+
+	init(proxy: GeometryProxy, content: @escaping () -> C) {
+		self.parentFrame = proxy.frame(in: .global)
+		self.content = content
+	}
+
+
+	var body: some View {
+		Group {
+			if isVisible {
+				content()
+			}
+			else {
+				Color.clear
+			}
+		}
+
+		// Ensure the cell always extends to the size of its parent
+		.frame(width: parentFrame.width, height: parentFrame.height)
+
+		// Empty overlay for tracking the real coordinates of this view
+		.overlay {
+			GeometryReader { proxy in
+				Color.clear
+					.onChange(of: proxy.frame(in: .global)) { newValue in
+						let hotFrame = parentFrame
+							.insetBy(dx: -parentFrame.width, dy: -parentFrame.height)
+						let childFrame = proxy.frame(in: .global)
+						isVisible = hotFrame.intersects(childFrame)
+					}
+			}
 		}
 	}
 }

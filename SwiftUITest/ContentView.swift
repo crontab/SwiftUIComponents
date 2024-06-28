@@ -7,30 +7,32 @@
 
 import SwiftUI
 
+
 struct ContentView: View {
 	@State private var action: ScrollViewAction = .page(2, animated: false)
 	@State private var state: ScrollViewState = .init()
 
 	var body: some View {
 		GeometryReader { proxy in
-			PagingScrollView(.vertical, action: $action, state: $state) {
-				VStack(spacing: 0) {
-					ForEach([1, 2, 3, 4, 5], id: \.self) { i in
-						Text("Page \(i)")
-							.frame(width: proxy.size.width, height: proxy.size.height)
-							.background(.gray.opacity(0.15))
+			PagingScrollView(.horizontal, action: $action, state: $state) {
+				HStack(spacing: 0) {
+					ForEach(0...9, id: \.self) { i in
+						LazyPage(proxy: proxy) {
+							Text("Page \(i)")
+								.onAppear {
+									print("Draw:", i)
+								}
+						}
+						.background(.gray.opacity(0.1))
 					}
 				}
+				.frame(height: proxy.size.height)
 			}
-			.removesSafeArea()
-			.background(.gray.opacity(0.15))
 		}
 		.ignoresSafeArea()
-		.onChange(of: state) { newValue in
-			print(newValue.page)
-		}
 	}
 }
+
 
 #Preview {
 	ContentView()
