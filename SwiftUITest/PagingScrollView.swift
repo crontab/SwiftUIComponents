@@ -171,7 +171,7 @@ struct LazyPage<C: View>: View {
 		parentWidth = frame.width
 		parentHeight = frame.height
 		hotFrame = frame
-			.insetBy(dx: -parentWidth, dy: -parentHeight)
+			.insetBy(dx: -parentWidth / 2, dy: -parentHeight / 2)
 		self.content = content
 	}
 
@@ -192,8 +192,13 @@ struct LazyPage<C: View>: View {
 		// Empty overlay for tracking the real coordinates of this view
 		.overlay {
 			GeometryReader { proxy in
+				let frame = proxy.frame(in: .global)
 				Color.clear
-					.onChange(of: proxy.frame(in: .global)) { newValue in
+					.onAppear {
+						// This always loads the first two pages even if the initial page is set to non-zero a bit later
+						isVisible = hotFrame.intersects(frame)
+					}
+					.onChange(of: frame) { newValue in
 						isVisible = hotFrame.intersects(newValue)
 					}
 			}
@@ -209,6 +214,9 @@ struct LazyPage<C: View>: View {
 				ForEach(0...5, id: \.self) { i in
 					LazyPage(proxy: proxy) {
 						Text("Page \(i)")
+							.onAppear {
+								print("Draw", i)
+							}
 					}
 					.background(.gray.opacity(0.1))
 				}
