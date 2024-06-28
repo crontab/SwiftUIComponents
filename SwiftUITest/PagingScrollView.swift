@@ -1,6 +1,5 @@
 //
 //  PagingScrollView.swift
-//  PepQuotes
 //
 //  Created by Hovik Melikyan on 23.03.24.
 //
@@ -160,14 +159,19 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 // MARK: Lazy page for PagingScrollView
 
 struct LazyPage<C: View>: View {
-	private let parentFrame: CGRect
+	private let parentWidth, parentHeight: Double
+	private let hotFrame: CGRect
 	private let content: () -> C
 
 	@State private var isVisible: Bool = false
 
 
 	init(proxy: GeometryProxy, content: @escaping () -> C) {
-		self.parentFrame = proxy.frame(in: .global)
+		let frame = proxy.frame(in: .global)
+		parentWidth = frame.width
+		parentHeight = frame.height
+		hotFrame = frame
+			.insetBy(dx: -parentWidth, dy: -parentHeight)
 		self.content = content
 	}
 
@@ -183,17 +187,14 @@ struct LazyPage<C: View>: View {
 		}
 
 		// Ensure the cell always extends to the size of its parent
-		.frame(width: parentFrame.width, height: parentFrame.height)
+		.frame(width: parentWidth, height: parentHeight)
 
 		// Empty overlay for tracking the real coordinates of this view
 		.overlay {
 			GeometryReader { proxy in
 				Color.clear
 					.onChange(of: proxy.frame(in: .global)) { newValue in
-						let hotFrame = parentFrame
-							.insetBy(dx: -parentFrame.width, dy: -parentFrame.height)
-						let childFrame = proxy.frame(in: .global)
-						isVisible = hotFrame.intersects(childFrame)
+						isVisible = hotFrame.intersects(newValue)
 					}
 			}
 		}
@@ -203,17 +204,17 @@ struct LazyPage<C: View>: View {
 
 #Preview {
 	GeometryReader { proxy in
-		PagingScrollView(.vertical, action: .constant(.page(2, animated: false))) {
-			VStack(spacing: 0) {
-				ForEach([1, 2, 3, 4, 5], id: \.self) { i in
-					Text("Page \(i)")
-						.frame(width: proxy.size.width, height: proxy.size.height)
-						.background(.gray.opacity(0.15))
+		PagingScrollView(.horizontal, action: .constant(.page(2, animated: false))) {
+			HStack(spacing: 0) {
+				ForEach(0...5, id: \.self) { i in
+					LazyPage(proxy: proxy) {
+						Text("Page \(i)")
+					}
+					.background(.gray.opacity(0.1))
 				}
 			}
 		}
 		.removesSafeArea()
-		.background(.gray.opacity(0.15))
 	}
 	.ignoresSafeArea()
 }
