@@ -40,11 +40,14 @@ struct ScrollViewState: Equatable {
 
 struct PagingScrollView<Content: View>: UIViewRepresentable {
 
+	typealias RefreshAction = () async -> Void
+
 	@Binding private var action: ScrollViewAction
 	@Binding private var state: ScrollViewState
 	private let axis: Axis
 	private let content: () -> Content
 	private var removeSafeArea: Bool = false
+	private var refreshAction: RefreshAction?
 
 
 	init(_ axis: Axis, action: Binding<ScrollViewAction> = .constant(.idle), state: Binding<ScrollViewState> = .constant(.init()), @ViewBuilder content: @escaping () -> Content) {
@@ -62,11 +65,19 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	}
 
 
+	func refreshAction(_ action: @escaping RefreshAction) -> Self {
+		// This doesn't work very well with removeSafeArea() since the indicator falls under the "island"
+		var view = self
+		view.refreshAction = action
+		return view
+	}
+
+
 	func makeUIView(context: Context) -> HostedScrollView {
 		let host = UIHostingController(rootView: content())
 		host.view.backgroundColor = .clear
 
-		let scrollView = HostedScrollView(host: host, ignoreSafeArea: removeSafeArea)
+		let scrollView = HostedScrollView(host: host, ignoreSafeArea: removeSafeArea, refreshAction: refreshAction)
 		scrollView.isPagingEnabled = true
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
@@ -134,11 +145,24 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	final class HostedScrollView: UIScrollView {
 		private let host: UIHostingController<Content>
 		private let ignoreSafeArea: Bool
+		private let refreshAction: RefreshAction?
 
-		init(host: UIHostingController<Content>, ignoreSafeArea: Bool) {
+		init(host: UIHostingController<Content>, ignoreSafeArea: Bool, refreshAction: RefreshAction?) {
 			self.host = host
 			self.ignoreSafeArea = ignoreSafeArea
+			self.refreshAction = refreshAction
 			super.init(frame: .zero)
+
+			if let refreshAction {
+				let refreshControl = UIRefreshControl()
+				refreshControl.addAction(UIAction { _ in
+					Task {
+						await refreshAction()
+						refreshControl.endRefreshing()
+					}
+				}, for: .valueChanged)
+				self.refreshControl = refreshControl
+			}
 		}
 
 		required init?(coder: NSCoder) {
@@ -209,8 +233,8 @@ struct LazyPage<C: View>: View {
 
 #Preview {
 	GeometryReader { proxy in
-		PagingScrollView(.horizontal, action: .constant(.page(2, animated: false))) {
-			HStack(spacing: 0) {
+		PagingScrollView(.vertical, action: .constant(.page(0, animated: false))) {
+			VStack(spacing: 0) {
 				ForEach(0...5, id: \.self) { i in
 					LazyPage(proxy: proxy) {
 						Text("Page \(i)")
@@ -221,6 +245,10 @@ struct LazyPage<C: View>: View {
 					.background(.gray.opacity(0.1))
 				}
 			}
+		}
+		.refreshAction {
+			try? await Task.sleep(for: .seconds(2))
+			print("Refresh")
 		}
 		.removesSafeArea()
 	}
