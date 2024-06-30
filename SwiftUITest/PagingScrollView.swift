@@ -130,23 +130,29 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 
 	final class HostedScrollView: UIScrollView {
 		private let host: UIHostingController<Content>
-		private let refreshAction: RefreshAction?
 
 		init(host: UIHostingController<Content>, refreshAction: RefreshAction?) {
 			self.host = host
-			self.refreshAction = refreshAction
 			super.init(frame: .zero)
 
 			if let refreshAction {
 				let refreshControl = UIRefreshControl()
-				refreshControl.addAction(UIAction { _ in
+				refreshControl.addAction(UIAction { [weak self]_ in
+					guard let self else { return }
 					Task {
 						await refreshAction()
 						refreshControl.endRefreshing()
+						// Fix for the scroller not going all the way to the top if the parent view has ingoreSafeArea()
+						self.setContentOffset(.init(x: 0, y: 0), animated: true)
 					}
 				}, for: .valueChanged)
 				self.refreshControl = refreshControl
 			}
+		}
+
+		override func layoutSubviews() {
+			super.layoutSubviews()
+//			print("contentOffset.y [1]", contentOffset.y)
 		}
 
 		required init?(coder: NSCoder) {
