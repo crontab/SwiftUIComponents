@@ -14,6 +14,8 @@ import SwiftUI
 // the scroller's feedback: it returns the underlying UIScrollView object in case you need to additionally configure
 // it, and also the current page number which is updated as the user drags the scroller.
 //
+// The `refreshAction()` modifier acts like SwiftUI's `refreshable()`.
+//
 // `LazyPage()` provides a lazy rendering mechanism for PagingScrollView. You can wrap the contents of each page into
 // this view, presumably within a `ForEach()` loop. The reason this component exists is that `LazyXView()` standard
 // components don't work as intended under our PagingScrollView, since they expect the parent view to be SwiftUI's
