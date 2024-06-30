@@ -31,7 +31,6 @@ struct ContentView: View {
 				try? await Task.sleep(for: .seconds(2))
 				print("Refresh")
 			}
-			.removesSafeArea()
 		}
 		.ignoresSafeArea()
 	}

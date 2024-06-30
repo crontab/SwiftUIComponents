@@ -14,10 +14,6 @@ import SwiftUI
 // the scroller's feedback: it returns the underlying UIScrollView object in case you need to additionally configure
 // it, and also the current page number which is updated as the user drags the scroller.
 //
-// The `removesSafeArea()` modifier is an important addition to scrollers that cover the entire screen since SwiftUI's
-// own `ignoresSafeArea()` can't remove all safe area treatment from the scroller. You can play with the preview at the
-// bottom of this file to see how these two modifiers affect the scroller.
-//
 // `LazyPage()` provides a lazy rendering mechanism for PagingScrollView. You can wrap the contents of each page into
 // this view, presumably within a `ForEach()` loop. The reason this component exists is that `LazyXView()` standard
 // components don't work as intended under our PagingScrollView, since they expect the parent view to be SwiftUI's
@@ -46,7 +42,6 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	@Binding private var state: ScrollViewState
 	private let axis: Axis
 	private let content: () -> Content
-	private var removeSafeArea: Bool = false
 	private var refreshAction: RefreshAction?
 
 
@@ -58,15 +53,7 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	}
 
 
-	func removesSafeArea() -> some View {
-		var view = self
-		view.removeSafeArea = true
-		return view.ignoresSafeArea()
-	}
-
-
 	func refreshAction(_ action: @escaping RefreshAction) -> Self {
-		// This doesn't work very well with removeSafeArea() since the indicator falls under the "island"
 		var view = self
 		view.refreshAction = action
 		return view
@@ -77,11 +64,10 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 		let host = UIHostingController(rootView: content())
 		host.view.backgroundColor = .clear
 
-		let scrollView = HostedScrollView(host: host, ignoreSafeArea: removeSafeArea, refreshAction: refreshAction)
+		let scrollView = HostedScrollView(host: host, refreshAction: refreshAction)
 		scrollView.isPagingEnabled = true
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
-		scrollView.contentInsetAdjustmentBehavior = removeSafeArea ? .never : .automatic
 		scrollView.delegate = context.coordinator
 
 		scrollView.addSubview(host.view)
@@ -144,12 +130,10 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 
 	final class HostedScrollView: UIScrollView {
 		private let host: UIHostingController<Content>
-		private let ignoreSafeArea: Bool
 		private let refreshAction: RefreshAction?
 
-		init(host: UIHostingController<Content>, ignoreSafeArea: Bool, refreshAction: RefreshAction?) {
+		init(host: UIHostingController<Content>, refreshAction: RefreshAction?) {
 			self.host = host
-			self.ignoreSafeArea = ignoreSafeArea
 			self.refreshAction = refreshAction
 			super.init(frame: .zero)
 
@@ -168,8 +152,6 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 		required init?(coder: NSCoder) {
 			fatalError("init(coder:) has not been implemented")
 		}
-
-		override var safeAreaInsets: UIEdgeInsets { ignoreSafeArea ? .zero : super.safeAreaInsets }
 
 		fileprivate func updateView(content: () -> Content) {
 			host.rootView = content()
@@ -250,7 +232,6 @@ struct LazyPage<C: View>: View {
 			try? await Task.sleep(for: .seconds(2))
 			print("Refresh")
 		}
-		.removesSafeArea()
 	}
 	.ignoresSafeArea()
 }
