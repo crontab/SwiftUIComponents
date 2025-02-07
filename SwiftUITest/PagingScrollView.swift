@@ -207,8 +207,8 @@ struct LazyPage<C: View>: View {
 						// This always loads the first two pages even if the initial page is set to non-zero a bit later
 						isVisible = hotFrame.intersects(frame)
 					}
-					.onChange(of: frame) { newValue in
-						isVisible = hotFrame.intersects(newValue)
+					.onChange(of: frame) { old, new in
+						isVisible = hotFrame.intersects(new)
 					}
 			}
 		}

@@ -17,7 +17,7 @@ struct SwiftUITestApp: App {
 			Stripes()
 				.ignoresSafeArea()
 				.overlay(alignment: .bottom) {
-					TabBarSheet()
+					TabBarSheetTest()
 				}
 		}
 	}
