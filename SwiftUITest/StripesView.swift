@@ -1,5 +1,5 @@
 //
-//  UnimplementedView.swift
+//  StripesView.swift
 //
 //  Created by Hovik Melikyan on 04.08.24.
 //
@@ -9,23 +9,19 @@ import SwiftUI
 
 // Stripes are based on https://github.com/eneko/Stripes
 
-struct StripesConfig {
-	var background: Color = .gray.opacity(0.05)
-	var foreground: Color = .gray.opacity(0.08)
-	var degrees: Double = 45
-	var barWidth: CGFloat = 8
-	var barSpacing: CGFloat = 10
-
-	static let `default` = StripesConfig()
-}
-
-
 struct Stripes: View {
-	let config: StripesConfig
 
-	init(_ config: StripesConfig) {
-		self.config = config
+	struct StripesConfig {
+		var background: Color = .gray.opacity(0.05)
+		var foreground: Color = .gray.opacity(0.08)
+		var degrees: Double = 45
+		var barWidth: CGFloat = 8
+		var barSpacing: CGFloat = 10
+
+		static let `default` = StripesConfig()
 	}
+
+	var config: StripesConfig = .default
 
 	var body: some View {
 		GeometryReader { geometry in
@@ -48,17 +44,17 @@ struct Stripes: View {
 }
 
 
-struct UnimplementedView: View {
+struct StripesView: View {
 
-	var showLabel: Bool = true
+	var text: String?
 
 	var body: some View {
 		ZStack {
-			Stripes(.default)
+			Stripes()
 				.ignoresSafeArea()
 
-			if showLabel {
-				Text("Not implemented".uppercased())
+			if let text {
+				Text(text.uppercased())
 					.font(.caption)
 					.foregroundColor(.gray)
 					.padding(EdgeInsets(top: 4, leading: 6, bottom: 3, trailing: 6))
@@ -70,5 +66,5 @@ struct UnimplementedView: View {
 
 
 #Preview {
-	UnimplementedView()
+	StripesView(text: "Where am I?")
 }

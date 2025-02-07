@@ -14,7 +14,11 @@ struct SwiftUITestApp: App {
 
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
+			Stripes()
+				.ignoresSafeArea()
+				.overlay(alignment: .bottom) {
+					TabBarSheet()
+				}
 		}
 	}
 }
