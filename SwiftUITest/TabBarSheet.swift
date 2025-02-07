@@ -16,23 +16,11 @@ extension View {
 	}
 
 
-	func onHeightChange(value: Binding<CGFloat>) -> some View {
-		background {
-			GeometryReader { proxy in
-				Color.clear
-					.onChange(of: proxy.size.height) { old, new in
-						value.wrappedValue = new
-					}
-			}
-		}
-	}
-
-
 	func onHeightChange(_ action: @escaping (CGFloat) -> Void) -> some View {
 		background {
 			GeometryReader { proxy in
 				Color.clear
-					.onChange(of: proxy.size.height) { old, new in
+					.onChange(of: proxy.size.height) { _, new in
 						action(new)
 					}
 			}

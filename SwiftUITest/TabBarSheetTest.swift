@@ -9,24 +9,41 @@ import SwiftUI
 
 struct TabBarSheetTest: View {
 
+	private let minHeight = 64.0
+	private let maxHeight = 600.0
+
 	@State private var maximized: Bool = false
 	@State private var currentHeight: CGFloat = 0
 
+	private var progress: CGFloat { (currentHeight - minHeight) / (maxHeight - minHeight) }
+
 
 	var body: some View {
-		VStack {
-			HStack {
-				Button {
-					withAnimation(.bouncy(duration: 0.2)) {
-						maximized.toggle()
+		ZStack {
+			// Maximized
+			VStack {
+				Circle()
+				Spacer()
+			}
+			.padding(.bottom, -maxHeight)
+			.opacity(progress)
+
+			// Minimized
+			VStack {
+				HStack {
+					Button {
+						withAnimation(.bouncy(duration: 0.2)) {
+							maximized.toggle()
+						}
+					} label: {
+						Text("Tab bar")
 					}
-				} label: {
-					Text("Tab bar")
 				}
 				Spacer()
 			}
-			Spacer()
+//			.opacity(1 - progress)
 		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.padding()
 		.background {
 			UnevenRoundedRectangle(topLeadingRadius: 12, topTrailingRadius: 12)
@@ -34,10 +51,10 @@ struct TabBarSheetTest: View {
 				.shadow(color: .primary.opacity(0.3), radius: 0.5)
 				.ignoresSafeArea()
 		}
-		.tabBarSheet(minHeight: 64, maxHeight: 500, maximized: $maximized)
-		.onHeightChange(value: $currentHeight)
-		.onChange(of: currentHeight) { _, new in
-			print(new)
+		.tabBarSheet(minHeight: minHeight, maxHeight: maxHeight, maximized: $maximized)
+		.onHeightChange { newHeight in
+			currentHeight = newHeight
+			print(newHeight)
 		}
 	}
 }
