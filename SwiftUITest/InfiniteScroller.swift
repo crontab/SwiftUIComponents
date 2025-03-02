@@ -90,18 +90,16 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 		fileprivate func updateView(preserveOffset: Bool, content: () -> Content) {
 			let oldHeight = host.view.bounds.height
 			host.rootView = content()
-			frame.size.width = 0 // somehow this fixes the auto-width problem
 
 			// Auto-size and auto-place content
 			host.view.sizeToFit()
 			let newHeight = host.view.bounds.height
-			let deltaHeight = newHeight - oldHeight
 			if preserveOffset { // expand up
-				host.view.frame.origin.y -= deltaHeight
-				contentInset.top += deltaHeight
+				host.view.frame.origin.y = -newHeight + contentSize.height
+				contentInset.top = newHeight - contentSize.height
 			}
 			else { // expand down
-				contentSize.height += deltaHeight
+				contentSize.height += newHeight - oldHeight
 			}
 		}
 
