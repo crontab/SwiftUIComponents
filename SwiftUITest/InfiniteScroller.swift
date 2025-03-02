@@ -76,7 +76,7 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 			delegate = self
 			addSubview(host.view)
 			alwaysBounceVertical = true
-			host.view.backgroundColor = .quaternarySystemFill // .clear
+			host.view.backgroundColor = .clear
 			host.view.autoresizingMask = [.flexibleWidth]
 			// updateView() will be called after this
 		}
@@ -94,7 +94,8 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
 			// Auto-size and auto-place content
 			host.view.sizeToFit()
-			let deltaHeight = host.view.bounds.height - oldHeight
+			let newHeight = host.view.bounds.height
+			let deltaHeight = newHeight - oldHeight
 			if preserveOffset { // expand up
 				host.view.frame.origin.y -= deltaHeight
 				contentInset.top += deltaHeight
@@ -165,6 +166,10 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 		private var bottomContentOffsetY: Double {
 			max(contentSize.height - bounds.height + adjustedContentInset.bottom, -adjustedContentInset.top)
 		}
+
+		private var pageHeight: Double {
+			bounds.height - adjustedContentInset.top - adjustedContentInset.bottom
+		}
 	}
 }
 
@@ -183,6 +188,8 @@ struct InfiniteScrollerPreview: PreviewProvider {
 							.frame(height: 50)
 					}
 				}
+				.frame(maxWidth: .infinity)
+				.background(Color(uiColor: .quaternarySystemFill))
 			}
 			.onApproachingEdge { edge in
 				try? await Task.sleep(for: .seconds(1))
@@ -196,11 +203,11 @@ struct InfiniteScrollerPreview: PreviewProvider {
 						break
 				}
 			}
+			.ignoresSafeArea()
 		}
 	}
 
 	static var previews: some View {
 		Preview()
-			.ignoresSafeArea()
 	}
 }

@@ -8,8 +8,6 @@
 import SwiftUI
 
 
-// Unfinished experiment
-
 struct InfiniteView<Content: View, Data: RandomAccessCollection>: View where Data.Element: Identifiable {
 
 	private let items: Data
@@ -23,12 +21,13 @@ struct InfiniteView<Content: View, Data: RandomAccessCollection>: View where Dat
 
 
 	var body: some View {
-		ScrollView {
-			ForEach(items, content: content)
-				.padding(.bottom, -100)
-				.offset(y: -100)
+		InfiniteScroller {
+			VStack(spacing: 0) {
+				ForEach(items) { item in
+					content(item)
+				}
+			}
 		}
-		.contentMargins(100, for: .scrollContent)
 	}
 }
 
