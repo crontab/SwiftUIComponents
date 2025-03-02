@@ -7,15 +7,21 @@
 import SwiftUI
 
 
-enum InfiniteScrollerAction {
+enum InfiniteScrollerAction: Equatable {
 	case scrollToTop(animated: Bool)
 	case scrollToBottom(animated: Bool)
+	case preserveOffset // after adding elements to top
 }
 
 
 struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
-	typealias OnApproachingEdge = (Edge) -> Void
+	typealias OnApproachingEdge = (Edge) async -> Void
+
+	@Binding private var action: InfiniteScrollerAction?
+	private var onApproachingEdge: OnApproachingEdge? = nil // currently only `top` and `bottom` and only during interactive action
+	private let content: () -> Content
+
 
 	init(action: Binding<InfiniteScrollerAction?> = .constant(nil), content: @escaping () -> Content) {
 		self._action = action
@@ -30,20 +36,13 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 	}
 
 
-	// Private part
-
-	@Binding private var action: InfiniteScrollerAction?
-	private var onApproachingEdge: OnApproachingEdge? = nil // currently only `top` and `bottom` and only during interactive action
-	private let content: () -> Content
-
-
 	func makeUIView(context: Context) -> HostedScrollView {
 		return HostedScrollView(content: content, onApproachingEdge: onApproachingEdge)
 	}
 
 
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
-		scrollView.updateView(content: content)
+		scrollView.updateView(preserveOffset: action == .preserveOffset, content: content)
 		defer {
 			action = nil
 		}
@@ -58,6 +57,8 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 				Task {
 					scrollView.scrollToBottom(animated: animated)
 				}
+			case .preserveOffset:
+				break // handled in updateView()
 		}
 	}
 
@@ -65,6 +66,7 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 	final class HostedScrollView: UIScrollView, UIScrollViewDelegate {
 		private let host: UIHostingController<Content>
 		private let onApproachingEdge: OnApproachingEdge?
+		private var edgeLock: Bool = false
 
 
 		init(content: () -> Content, onApproachingEdge: OnApproachingEdge?) {
@@ -85,17 +87,21 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 		}
 
 
-		fileprivate func updateView(content: () -> Content) {
-//			let prevHeight = host.view.bounds.height
+		fileprivate func updateView(preserveOffset: Bool, content: () -> Content) {
+			let oldHeight = host.view.bounds.height
 			host.rootView = content()
 			frame.size.width = 0 // somehow this fixes the auto-width problem
 
 			// Auto-size and auto-place content
 			host.view.sizeToFit()
-			let newHeight = host.view.bounds.height
-			host.view.frame.origin.y = -newHeight
-			contentSize.height = 0
-			contentInset.top = newHeight
+			let deltaHeight = host.view.bounds.height - oldHeight
+			if preserveOffset { // expand up
+				host.view.frame.origin.y -= deltaHeight
+				contentInset.top += deltaHeight
+			}
+			else { // expand down
+				contentSize.height += deltaHeight
+			}
 		}
 
 
@@ -130,12 +136,21 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
 		private func edgeTest() {
 			guard let onApproachingEdge else { return }
+			guard !edgeLock else { return }
 			let vicinity: Double = 200
 			if isCloseToTop(within: vicinity) {
-				onApproachingEdge(.top)
+				edgeLock = true
+				Task {
+					await onApproachingEdge(.top)
+					edgeLock = false
+				}
 			}
 			else if isCloseToBottom(within: vicinity) {
-				onApproachingEdge(.bottom)
+				edgeLock = true
+				Task {
+					await onApproachingEdge(.bottom)
+					edgeLock = false
+				}
 			}
 		}
 
@@ -170,8 +185,15 @@ struct InfiniteScrollerPreview: PreviewProvider {
 				}
 			}
 			.onApproachingEdge { edge in
-				if edge == .top {
-					range = (range.lowerBound - 20)..<range.upperBound
+				try? await Task.sleep(for: .seconds(1))
+				switch edge {
+					case .top:
+						action = .preserveOffset
+						range = (range.lowerBound - 20)..<range.upperBound
+					case .bottom:
+						range = range.lowerBound..<(range.upperBound + 5)
+					default:
+						break
 				}
 			}
 		}

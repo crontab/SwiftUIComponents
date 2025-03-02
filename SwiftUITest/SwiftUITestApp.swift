@@ -10,7 +10,7 @@ import SwiftUI
 
 @main
 struct SwiftUITestApp: App {
-	@State private var range = 0..<20
+	@State private var range = 0..<30
 	@State private var action: InfiniteScrollerAction? = .scrollToBottom(animated: false)
 
 	var body: some Scene {
@@ -25,8 +25,14 @@ struct SwiftUITestApp: App {
 				}
 			}
 			.onApproachingEdge { edge in
-				if edge == .top {
-					range = (range.lowerBound - 20)..<range.upperBound
+				switch edge {
+					case .top:
+						action = .preserveOffset
+						range = (range.lowerBound - 20)..<range.upperBound
+					case .bottom:
+						range = range.lowerBound..<(range.upperBound + 5)
+					default:
+						break
 				}
 			}
 			.ignoresSafeArea()
