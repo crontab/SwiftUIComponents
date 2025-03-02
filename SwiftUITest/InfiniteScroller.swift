@@ -8,6 +8,7 @@ import SwiftUI
 
 
 enum InfiniteScrollerAction {
+	case scrollToTop(animated: Bool)
 	case scrollToBottom(animated: Bool)
 }
 
@@ -43,15 +44,19 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
 		scrollView.updateView(content: content)
-
+		defer {
+			action = nil
+		}
 		switch action {
 			case .none:
 				break
-
+			case .scrollToTop(let animated):
+				Task {
+					scrollView.scrollToTop(animated: animated)
+				}
 			case .scrollToBottom(let animated):
-				Task { @MainActor in
+				Task {
 					scrollView.scrollToBottom(animated: animated)
-					self.action = nil
 				}
 		}
 	}
@@ -81,7 +86,6 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
 
 		fileprivate func updateView(content: () -> Content) {
-			let headroom: Double = 1_000_000
 //			let prevHeight = host.view.bounds.height
 			host.rootView = content()
 			frame.size.width = 0 // somehow this fixes the auto-width problem
@@ -89,9 +93,9 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 			// Auto-size and auto-place content
 			host.view.sizeToFit()
 			let newHeight = host.view.bounds.height
-			host.view.frame.origin.y = headroom - newHeight
-			contentSize.height = headroom
-			contentInset.top = -headroom + newHeight
+			host.view.frame.origin.y = -newHeight
+			contentSize.height = 0
+			contentInset.top = newHeight
 		}
 
 
@@ -110,10 +114,17 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
 		// Positioning utilities
 
-		fileprivate func scrollToBottom(animated: Bool) {
-			setContentOffset(CGPoint(x: contentOffset.x, y: bottomContentOffsetY), animated: animated)
+		fileprivate func scrollToTop(animated: Bool) {
+			setContentOffset(.init(x: contentOffset.x, y: -adjustedContentInset.top), animated: animated)
 			if !animated {
 				edgeTest() // otherwise it will be called in scrollViewDidEndScrollingAnimation()
+			}
+		}
+
+		fileprivate func scrollToBottom(animated: Bool) {
+			setContentOffset(.init(x: contentOffset.x, y: bottomContentOffsetY), animated: animated)
+			if !animated {
+				edgeTest()
 			}
 		}
 
@@ -143,23 +154,31 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 }
 
 
-#Preview {
-	@Previewable @State var range = 0..<20
-	@Previewable @State var action: InfiniteScrollerAction? = .scrollToBottom(animated: false)
+struct InfiniteScrollerPreview: PreviewProvider {
 
-	InfiniteScroller(action: $action) {
-		VStack(spacing: 0) {
-			ForEach(range, id: \.self) { i in
-				Text("Hello \(i + 1)")
-					.frame(height: 50)
+	private struct Preview: View {
+		@State private var range = 0..<20
+		@State private var action: InfiniteScrollerAction? = .scrollToBottom(animated: false)
+
+		var body: some View {
+			InfiniteScroller(action: $action) {
+				VStack(spacing: 0) {
+					ForEach(range, id: \.self) { i in
+						Text("Hello \(i + 1)")
+							.frame(height: 50)
+					}
+				}
+			}
+			.onApproachingEdge { edge in
+				if edge == .top {
+					range = (range.lowerBound - 20)..<range.upperBound
+				}
 			}
 		}
 	}
-	.onApproachingEdge { edge in
-		if edge == .top {
-			range = (range.lowerBound - 20)..<20
-			print(Date.now.timeIntervalSinceReferenceDate, edge)
-		}
+
+	static var previews: some View {
+		Preview()
+			.ignoresSafeArea()
 	}
-	.ignoresSafeArea()
 }
