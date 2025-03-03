@@ -1,5 +1,5 @@
 //
-//  InfiniteScroller.swift
+//  InfiniteViewImpl.swift
 //
 //  Created by Hovik Melikyan on 28.02.25.
 //
@@ -7,23 +7,23 @@
 import SwiftUI
 
 
-enum InfiniteScrollerAction: Equatable {
+enum InfiniteViewImplAction: Equatable {
 	case scrollToTop(animated: Bool)
 	case scrollToBottom(animated: Bool)
-	case preserveOffset // after adding elements to top
+	case didAddTopContent(height: Double) // 0 means calculate automatically
 }
 
 
-struct InfiniteScroller<Content: View>: UIViewRepresentable {
+struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 
 	typealias OnApproachingEdge = (Edge) async -> Void
 
-	@Binding private var action: InfiniteScrollerAction?
+	@Binding private var action: InfiniteViewImplAction?
 	private var onApproachingEdge: OnApproachingEdge? = nil // currently only `top` and `bottom` and only during interactive action
 	private let content: () -> Content
 
 
-	init(action: Binding<InfiniteScrollerAction?> = .constant(nil), content: @escaping () -> Content) {
+	init(action: Binding<InfiniteViewImplAction?> = .constant(nil), content: @escaping () -> Content) {
 		self._action = action
 		self.content = content
 	}
@@ -42,24 +42,27 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 
 
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
-		scrollView.updateView(preserveOffset: action == .preserveOffset, content: content)
-		defer {
-			action = nil
-		}
 		switch action {
 			case .none:
-				break
+				scrollView.updateView(content: content)
+
 			case .scrollToTop(let animated):
+				scrollView.updateView(content: content)
 				Task {
 					scrollView.scrollToTop(animated: animated)
 				}
+
 			case .scrollToBottom(let animated):
+				scrollView.updateView(content: content)
 				Task {
 					scrollView.scrollToBottom(animated: animated)
 				}
-			case .preserveOffset:
-				break // handled in updateView()
+
+			case .didAddTopContent(let height):
+				scrollView.updateView(topContent: height, content: content)
 		}
+
+		action = nil
 	}
 
 
@@ -87,16 +90,16 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 		}
 
 
-		fileprivate func updateView(preserveOffset: Bool, content: () -> Content) {
+		fileprivate func updateView(topContent: Double? = nil, content: () -> Content) {
 			let oldHeight = host.view.bounds.height
 			host.rootView = content()
-
-			// Auto-size and auto-place content
+			frame.size.width = 0 // this is required on the Mac for some reason
 			host.view.sizeToFit()
 			let newHeight = host.view.bounds.height
-			if preserveOffset { // expand up
-				host.view.frame.origin.y = -newHeight + contentSize.height
-				contentInset.top = newHeight - contentSize.height
+			if let topContent { // expand up
+				let d = topContent > 0 ? topContent : newHeight - contentSize.height
+				host.view.frame.origin.y = -d
+				contentInset.top = d
 			}
 			else { // expand down
 				contentSize.height += newHeight - oldHeight
@@ -165,21 +168,23 @@ struct InfiniteScroller<Content: View>: UIViewRepresentable {
 			max(contentSize.height - bounds.height + adjustedContentInset.bottom, -adjustedContentInset.top)
 		}
 
-		private var pageHeight: Double {
-			bounds.height - adjustedContentInset.top - adjustedContentInset.bottom
-		}
+//		private var pageHeight: Double {
+//			bounds.height - adjustedContentInset.top - adjustedContentInset.bottom
+//		}
 	}
 }
 
+
+// MARK: - Preview
 
 struct InfiniteScrollerPreview: PreviewProvider {
 
 	private struct Preview: View {
 		@State private var range = 0..<20
-		@State private var action: InfiniteScrollerAction? = .scrollToBottom(animated: false)
+		@State private var action: InfiniteViewImplAction? = .scrollToBottom(animated: false)
 
 		var body: some View {
-			InfiniteScroller(action: $action) {
+			InfiniteViewImpl(action: $action) {
 				VStack(spacing: 0) {
 					ForEach(range, id: \.self) { i in
 						Text("Hello \(i + 1)")
@@ -193,7 +198,7 @@ struct InfiniteScrollerPreview: PreviewProvider {
 				try? await Task.sleep(for: .seconds(1))
 				switch edge {
 					case .top:
-						action = .preserveOffset
+						action = .didAddTopContent(height: 0)
 						range = (range.lowerBound - 20)..<range.upperBound
 					case .bottom:
 						range = range.lowerBound..<(range.upperBound + 5)

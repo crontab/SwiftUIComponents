@@ -11,12 +11,12 @@ import SwiftUI
 @main
 struct SwiftUITestApp: App {
 	@State private var range = 0..<30
-	@State private var action: InfiniteScrollerAction? = .scrollToBottom(animated: false)
+	@State private var action: InfiniteViewImplAction? = .scrollToBottom(animated: false)
 
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteScroller(action: $action) {
+			InfiniteViewImpl(action: $action) {
 				VStack(spacing: 0) {
 					ForEach(range, id: \.self) { i in
 						Text("Hello \(i + 1)")
@@ -27,7 +27,7 @@ struct SwiftUITestApp: App {
 			.onApproachingEdge { edge in
 				switch edge {
 					case .top:
-						action = .preserveOffset
+						action = .didAddTopContent(height: 0)
 						range = (range.lowerBound - 20)..<range.upperBound
 					case .bottom:
 						range = range.lowerBound..<(range.upperBound + 5)

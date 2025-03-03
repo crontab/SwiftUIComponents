@@ -16,7 +16,7 @@
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
 		36844EB22D56A88500E793F0 /* TabBarSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EB12D56A88500E793F0 /* TabBarSheet.swift */; };
 		36CCB5642C2210A000E84714 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36CCB5632C2210A000E84714 /* ContentView.swift */; };
-		36FA69BD2D71AC2700C96B7F /* InfiniteScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FA69BC2D71AC2700C96B7F /* InfiniteScroller.swift */; };
+		36FA69BD2D71AC2700C96B7F /* InfiniteViewImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FA69BC2D71AC2700C96B7F /* InfiniteViewImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,7 +30,7 @@
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
 		36844EB12D56A88500E793F0 /* TabBarSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheet.swift; sourceTree = "<group>"; };
 		36CCB5632C2210A000E84714 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		36FA69BC2D71AC2700C96B7F /* InfiniteScroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteScroller.swift; sourceTree = "<group>"; };
+		36FA69BC2D71AC2700C96B7F /* InfiniteViewImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteViewImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,7 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				361FB8432D74D0820005ADAE /* InfiniteView.swift */,
-				36FA69BC2D71AC2700C96B7F /* InfiniteScroller.swift */,
+				36FA69BC2D71AC2700C96B7F /* InfiniteViewImpl.swift */,
 				363600EB2C81027200DF57DB /* StripesView.swift */,
 				361431EE2BB6891800FA71B4 /* PagingScrollView.swift */,
 				36CCB5632C2210A000E84714 /* ContentView.swift */,
@@ -159,7 +159,7 @@
 				36844EB22D56A88500E793F0 /* TabBarSheet.swift in Sources */,
 				363600EC2C81027200DF57DB /* StripesView.swift in Sources */,
 				361431EF2BB6891800FA71B4 /* PagingScrollView.swift in Sources */,
-				36FA69BD2D71AC2700C96B7F /* InfiniteScroller.swift in Sources */,
+				36FA69BD2D71AC2700C96B7F /* InfiniteViewImpl.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUITestApp.swift in Sources */,
 				361FB8442D74D0820005ADAE /* InfiniteView.swift in Sources */,
 				36CCB5642C2210A000E84714 /* ContentView.swift in Sources */,

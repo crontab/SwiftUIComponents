@@ -8,7 +8,12 @@
 import SwiftUI
 
 
-struct InfiniteView<Content: View, Data: RandomAccessCollection>: View where Data.Element: Identifiable {
+protocol InfiniteViewItem: Identifiable {
+	var height: Double { get }
+}
+
+
+struct InfiniteView<Content: View, Data: RandomAccessCollection>: View where Data.Element: InfiniteViewItem {
 
 	private let items: Data
 	private let content: (Data.Element) -> Content
@@ -21,10 +26,12 @@ struct InfiniteView<Content: View, Data: RandomAccessCollection>: View where Dat
 
 
 	var body: some View {
-		InfiniteScroller {
+		InfiniteViewImpl {
 			VStack(spacing: 0) {
 				ForEach(items) { item in
 					content(item)
+						.frame(height: item.height)
+						.frame(maxWidth: .infinity)
 				}
 			}
 		}
@@ -32,23 +39,25 @@ struct InfiniteView<Content: View, Data: RandomAccessCollection>: View where Dat
 }
 
 
-#Preview {
+struct InfiniteViewPreview: PreviewProvider {
 
-	struct Item: Identifiable {
+	private struct Item: InfiniteViewItem {
 		let id: Int
+		var height: Double { 50 }
 	}
 
-	struct Preview: View {
+	private struct Preview: View {
 
 		var body: some View {
 			let items = (0..<20).map { Item(id: $0) }
 			InfiniteView(items) { item in
 				Text("Hello \(item.id)")
-					.frame(height: 50)
-					.frame(maxWidth: .infinity)
 			}
 		}
 	}
 
-	return Preview()
+	static var previews: some View {
+		Preview()
+			.ignoresSafeArea()
+	}
 }
