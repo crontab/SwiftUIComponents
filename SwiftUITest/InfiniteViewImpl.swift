@@ -16,24 +16,9 @@ enum InfiniteViewImplAction: Equatable {
 
 struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 
-	typealias OnApproachingEdge = (Edge) async -> Void
-
-	@Binding private var action: InfiniteViewImplAction?
-	private var onApproachingEdge: OnApproachingEdge? = nil // currently only `top` and `bottom` and only during interactive action
-	private let content: () -> Content
-
-
-	init(action: Binding<InfiniteViewImplAction?> = .constant(nil), content: @escaping () -> Content) {
-		self._action = action
-		self.content = content
-	}
-
-
-	func onApproachingEdge(_ action: @escaping OnApproachingEdge) -> Self {
-		var this = self
-		this.onApproachingEdge = action
-		return this
-	}
+	@Binding var action: InfiniteViewImplAction?
+	let content: () -> Content
+	let onApproachingEdge: (Edge) async -> Void // currently only `top` and `bottom` and only during interactive action
 
 
 	func makeUIView(context: Context) -> HostedScrollView {
@@ -50,29 +35,32 @@ struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 				scrollView.updateView(content: content)
 				Task {
 					scrollView.scrollToTop(animated: animated)
+					action = nil
 				}
 
 			case .scrollToBottom(let animated):
 				scrollView.updateView(content: content)
 				Task {
 					scrollView.scrollToBottom(animated: animated)
+					action = nil
 				}
 
 			case .didAddTopContent(let height):
 				scrollView.updateView(topContent: height, content: content)
+				Task {
+					action = nil
+				}
 		}
-
-		action = nil
 	}
 
 
 	final class HostedScrollView: UIScrollView, UIScrollViewDelegate {
 		private let host: UIHostingController<Content>
-		private let onApproachingEdge: OnApproachingEdge?
+		private let onApproachingEdge: (Edge) async -> Void
 		private var edgeLock: Bool = false
 
 
-		init(content: () -> Content, onApproachingEdge: OnApproachingEdge?) {
+		init(content: () -> Content, onApproachingEdge: @escaping (Edge) async -> Void) {
 			self.host = UIHostingController(rootView: content())
 			self.onApproachingEdge = onApproachingEdge
 			super.init(frame: .zero)
@@ -137,7 +125,6 @@ struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 		}
 
 		private func edgeTest() {
-			guard let onApproachingEdge else { return }
 			guard !edgeLock else { return }
 			let vicinity: Double = 200
 			if isCloseToTop(within: vicinity) {
@@ -182,6 +169,7 @@ struct InfiniteScrollerPreview: PreviewProvider {
 	private struct Preview: View {
 		@State private var range = 0..<20
 		@State private var action: InfiniteViewImplAction? = .scrollToBottom(animated: false)
+		@State private var endOfData: Bool = false
 
 		var body: some View {
 			InfiniteViewImpl(action: $action) {
@@ -193,15 +181,16 @@ struct InfiniteScrollerPreview: PreviewProvider {
 				}
 				.frame(maxWidth: .infinity)
 				.background(Color(uiColor: .quaternarySystemFill))
-			}
-			.onApproachingEdge { edge in
+			} onApproachingEdge: { edge in
 				try? await Task.sleep(for: .seconds(1))
 				switch edge {
 					case .top:
-						action = .didAddTopContent(height: 0)
+						guard !endOfData else { return }
+						endOfData = true
+						action = .didAddTopContent(height: 20 * 50)
 						range = (range.lowerBound - 20)..<range.upperBound
-					case .bottom:
-						range = range.lowerBound..<(range.upperBound + 5)
+//					case .bottom:
+//						range = range.lowerBound..<(range.upperBound + 5)
 					default:
 						break
 				}
