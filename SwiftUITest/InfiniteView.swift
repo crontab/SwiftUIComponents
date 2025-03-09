@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-
+/*
 protocol InfiniteViewItem: Sendable, Identifiable {
 	var height: Double { get }
 }
@@ -99,3 +99,4 @@ struct InfiniteViewPreview: PreviewProvider {
 			.ignoresSafeArea()
 	}
 }
+*/

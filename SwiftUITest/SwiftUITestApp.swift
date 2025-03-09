@@ -10,32 +10,32 @@ import SwiftUI
 
 @main
 struct SwiftUITestApp: App {
-//	@State private var range = 0..<30
-//	@State private var action: InfiniteViewImplAction? = .scrollToBottom(animated: false)
+	@State private var range = 0..<30
+	@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
 
-	@State private var lower: Int = 0
+//	@State private var lower: Int = 0
 
-	private struct Item: InfiniteViewItem {
-		let id: Int
-		var height: Double { 50 }
-
-		static func from(range: Range<Int>) -> [Self] { range.map { Self(id: $0) } }
-	}
+//	private struct Item: InfiniteViewItem {
+//		let id: Int
+//		var height: Double { 50 }
+//
+//		static func from(range: Range<Int>) -> [Self] { range.map { Self(id: $0) } }
+//	}
 
 
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteView { (item: Item) in
-				Text("Hello \(item.id)")
-			} onLoadMore: {
-				guard lower > -20 else { return [] }
-				defer {
-					lower -= 20
-				}
-				return Item.from(range: lower..<(lower + 20))
-			}
-			.ignoresSafeArea()
+//			InfiniteView { (item: Item) in
+//				Text("Hello \(item.id)")
+//			} onLoadMore: {
+//				guard lower > -20 else { return [] }
+//				defer {
+//					lower -= 20
+//				}
+//				return Item.from(range: lower..<(lower + 20))
+//			}
+//			.ignoresSafeArea()
 
 //			InfiniteViewImpl(action: $action) {
 //				VStack(spacing: 0) {
@@ -56,7 +56,7 @@ struct SwiftUITestApp: App {
 //				}
 //			}
 //			.ignoresSafeArea()
-
+//
 //			Stripes()
 //				.ignoresSafeArea()
 //				.overlay(alignment: .bottom) {

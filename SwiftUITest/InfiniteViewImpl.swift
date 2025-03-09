@@ -7,18 +7,26 @@
 import SwiftUI
 
 
-enum InfiniteViewImplAction: Equatable {
-	case scrollToTop(animated: Bool)
-	case scrollToBottom(animated: Bool)
-	case didAddTopContent(height: Double) // 0 means calculate automatically
+enum InfiniteViewScrollAction {
+	case top(animated: Bool)
+	case bottom(animated: Bool)
 }
 
 
 struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 
-	@Binding var action: InfiniteViewImplAction?
-	let content: () -> Content
-	let onApproachingEdge: (Edge) async -> Void // currently only `top` and `bottom` and only during interactive action
+	private let headroom: Double
+	private let content: () -> Content
+	private let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within 200px from the edge
+	@Binding private var scrollAction: InfiniteViewScrollAction?
+
+
+	init(headroom: Double, content: @escaping () -> Content, onApproachingEdge: @escaping (Edge) async -> Void) {
+		self.headroom = headroom
+		self.content = content
+		self.onApproachingEdge = onApproachingEdge
+		self._scrollAction = .constant(nil)
+	}
 
 
 	func makeUIView(context: Context) -> HostedScrollView {
@@ -27,30 +35,31 @@ struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 
 
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
-		switch action {
-			case .none:
-				scrollView.updateView(content: content)
+		scrollView.updateView(headroom: headroom, content: content)
 
-			case .scrollToTop(let animated):
-				scrollView.updateView(content: content)
+		switch scrollAction {
+			case .none:
+				break
+
+			case .top(let animated):
 				Task {
 					scrollView.scrollToTop(animated: animated)
-					action = nil
+					scrollAction = nil
 				}
 
-			case .scrollToBottom(let animated):
-				scrollView.updateView(content: content)
+			case .bottom(let animated):
 				Task {
 					scrollView.scrollToBottom(animated: animated)
-					action = nil
-				}
-
-			case .didAddTopContent(let height):
-				scrollView.updateView(topContent: height, content: content)
-				Task {
-					action = nil
+					scrollAction = nil
 				}
 		}
+	}
+
+
+	func scrollTo(_ action: Binding<InfiniteViewScrollAction?>) -> Self {
+		var this = self
+		this._scrollAction = action
+		return this
 	}
 
 
@@ -78,20 +87,15 @@ struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 		}
 
 
-		fileprivate func updateView(topContent: Double? = nil, content: () -> Content) {
-			let oldHeight = host.view.bounds.height
+		fileprivate func updateView(headroom: Double, content: () -> Content) {
 			host.rootView = content()
 			frame.size.width = 0 // this is required on the Mac for some reason
 			host.view.sizeToFit()
 			let newHeight = host.view.bounds.height
-			if let topContent { // expand up
-				let d = topContent > 0 ? topContent : newHeight - contentSize.height
-				host.view.frame.origin.y = -d
-				contentInset.top = d
-			}
-			else { // expand down
-				contentSize.height += newHeight - oldHeight
-			}
+			let blankSpace = max(0, pageHeight - newHeight) // ensure small content is at the bottom
+			host.view.frame.origin.y = -headroom
+			contentInset.top = headroom + blankSpace
+			contentSize.height = newHeight - headroom
 		}
 
 
@@ -155,28 +159,32 @@ struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 			max(contentSize.height - bounds.height + adjustedContentInset.bottom, -adjustedContentInset.top)
 		}
 
-//		private var pageHeight: Double {
-//			bounds.height - adjustedContentInset.top - adjustedContentInset.bottom
-//		}
+		private var pageHeight: Double {
+			bounds.height - safeAreaInsets.top - safeAreaInsets.bottom
+		}
 	}
 }
 
 
 // MARK: - Preview
 
-struct InfiniteScrollerPreview: PreviewProvider {
+private let page = 20
+private let cellSize = 50.0
+
+struct InfiniteViewImplPreview: PreviewProvider {
 
 	private struct Preview: View {
-		@State private var range = 0..<20
-		@State private var action: InfiniteViewImplAction? = .scrollToBottom(animated: false)
+		@State private var range = 0..<page
+		@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
+		@State private var headroom: Double = 0 // Double(page) * cellSize
 		@State private var endOfData: Bool = false
 
 		var body: some View {
-			InfiniteViewImpl(action: $action) {
+			InfiniteViewImpl(headroom: headroom) {
 				VStack(spacing: 0) {
 					ForEach(range, id: \.self) { i in
 						Text("Hello \(i + 1)")
-							.frame(height: 50)
+							.frame(height: cellSize)
 					}
 				}
 				.frame(maxWidth: .infinity)
@@ -186,15 +194,16 @@ struct InfiniteScrollerPreview: PreviewProvider {
 				switch edge {
 					case .top:
 						guard !endOfData else { return }
-						endOfData = true
-						action = .didAddTopContent(height: 20 * 50)
-						range = (range.lowerBound - 20)..<range.upperBound
-//					case .bottom:
-//						range = range.lowerBound..<(range.upperBound + 5)
+						endOfData = range.count > 60
+						headroom += Double(page) * cellSize
+						range = (range.lowerBound - page)..<range.upperBound
+					case .bottom:
+						range = range.lowerBound..<(range.upperBound + 5)
 					default:
 						break
 				}
 			}
+			.scrollTo($action)
 			.ignoresSafeArea()
 		}
 	}
