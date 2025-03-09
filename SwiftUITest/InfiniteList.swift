@@ -1,5 +1,5 @@
 //
-//  InfiniteView.swift
+//  InfiniteList.swift
 //  SwiftUITest
 //
 //  Created by Hovik Melikyan on 02.03.25.
@@ -8,12 +8,12 @@
 import SwiftUI
 
 
-protocol InfiniteViewItem: Identifiable {
+protocol InfiniteListItem: Identifiable {
 	var height: Double { get }
 }
 
 
-struct InfiniteView<Content: View, Item: InfiniteViewItem>: View {
+struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 	private let items: [Item]
 	@ViewBuilder private let cellContent: (Item) -> Content
@@ -78,7 +78,7 @@ struct InfiniteView<Content: View, Item: InfiniteViewItem>: View {
 }
 
 
-private extension Array where Element: InfiniteViewItem {
+private extension Array where Element: InfiniteListItem {
 	var height: Double {
 		reduce(0) { $0 + $1.height }
 	}
@@ -92,7 +92,7 @@ private let cellSize = 50.0
 
 #Preview {
 
-	struct Item: InfiniteViewItem {
+	struct Item: InfiniteListItem {
 		let id: Int
 		var height: Double { cellSize }
 		static func from(range: Range<Int>) -> [Self] { range.map { Self(id: $0) } }
@@ -103,7 +103,7 @@ private let cellSize = 50.0
 		@State private var range = 0..<page
 
 		var body: some View {
-			InfiniteView(Item.from(range: range)) { item in
+			InfiniteList(Item.from(range: range)) { item in
 				Text("Hello \(item.id)")
 			} onLoadMore: {
 				guard range.lowerBound >= -60 else { return true }

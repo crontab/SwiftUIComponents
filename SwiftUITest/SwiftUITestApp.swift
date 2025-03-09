@@ -17,7 +17,7 @@ struct SwiftUITestApp: App {
 	@State private var range = 0..<page
 	@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
 
-	private struct Item: InfiniteViewItem {
+	private struct Item: InfiniteListItem {
 		let id: Int
 		var height: Double { cellSize }
 		static func from(range: Range<Int>) -> [Self] { range.map { Self(id: $0) } }
@@ -27,7 +27,7 @@ struct SwiftUITestApp: App {
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteView(Item.from(range: range)) { item in
+			InfiniteList(Item.from(range: range)) { item in
 				Text("Hello \(item.id)")
 			} onLoadMore: {
 				guard range.lowerBound >= -60 else { return true }
