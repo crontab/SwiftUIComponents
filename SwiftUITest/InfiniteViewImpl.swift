@@ -171,9 +171,9 @@ struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
 private let page = 20
 private let cellSize = 50.0
 
-struct InfiniteViewImplPreview: PreviewProvider {
+#Preview {
 
-	private struct Preview: View {
+	struct Preview: View {
 		@State private var range = 0..<page
 		@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
 		@State private var headroom: Double = 0 // Double(page) * cellSize
@@ -208,7 +208,5 @@ struct InfiniteViewImplPreview: PreviewProvider {
 		}
 	}
 
-	static var previews: some View {
-		Preview()
-	}
+	return Preview()
 }
