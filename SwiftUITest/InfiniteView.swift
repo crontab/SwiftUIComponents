@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/*
+
 protocol InfiniteViewItem: Sendable, Identifiable {
 	var height: Double { get }
 }
@@ -18,12 +18,13 @@ struct InfiniteView<Content: View, Item: InfiniteViewItem>: View {
 	@ViewBuilder let cellContent: (Item) -> Content
 	let onLoadMore: () async -> [Item]
 	@State private var items: [Item] = []
+	@State private var headroom: Double = 0
 	@State private var endOfData: Bool = false
-	@State private var action: InfiniteViewImplAction? = nil
+	@State private var action: InfiniteViewScrollAction? = nil
 
 
 	var body: some View {
-		InfiniteViewImpl(action: $action) {
+		InfiniteViewImpl(headroom: headroom) {
 			VStack(spacing: 0) {
 				ForEach(items) { item in
 					cellContent(item)
@@ -34,45 +35,40 @@ struct InfiniteView<Content: View, Item: InfiniteViewItem>: View {
 		} onApproachingEdge: { edge in
 			if edge == .top {
 				guard !endOfData else { return }
-				let previousTopId = items.first?.id
 				let newItems = await onLoadMore()
 				endOfData = newItems.isEmpty
 				items.insert(contentsOf: newItems, at: 0)
-				if let previousTopId {
-					didUpdateItems(previousTopId: previousTopId)
-				}
+				headroom += newItems.height
 			}
 		}
+		.scrollTo($action)
 		.task {
+			// Initial batch
 			items = await onLoadMore()
 			endOfData = items.isEmpty
-			action = .scrollToBottom(animated: false)
-		}
-	}
-
-
-	private func didUpdateItems(previousTopId: Item.ID) {
-		// Determine how much should be added to the content top
-		var extraHeight: Double = 0
-		let index = items.firstIndex { item in
-			if item.id == previousTopId { return true }
-			extraHeight += item.height
-			return false
-		}
-		if index != nil, extraHeight > 0 {
-			action = .didAddTopContent(height: extraHeight)
-			print("action:", action ?? "-")
+			action = .bottom(animated: false)
 		}
 	}
 }
 
 
+private extension Array where Element: InfiniteViewItem {
+	var height: Double {
+		reduce(0) { $0 + $1.height }
+	}
+}
+
+
+// MARK: - Preview
+
+private let page = 20
+private let cellSize = 50.0
+
 struct InfiniteViewPreview: PreviewProvider {
 
 	private struct Item: InfiniteViewItem {
 		let id: Int
-		var height: Double { 50 }
-
+		var height: Double { cellSize }
 		static func from(range: Range<Int>) -> [Self] { range.map { Self(id: $0) } }
 	}
 
@@ -87,9 +83,9 @@ struct InfiniteViewPreview: PreviewProvider {
 				guard lower >= -60 else { return [] }
 				try? await Task.sleep(for: .seconds(1))
 				defer {
-					lower -= 20
+					lower -= page
 				}
-				return Item.from(range: lower..<(lower + 20))
+				return Item.from(range: lower..<(lower + page))
 			}
 		}
 	}
@@ -99,4 +95,3 @@ struct InfiniteViewPreview: PreviewProvider {
 			.ignoresSafeArea()
 	}
 }
-*/
