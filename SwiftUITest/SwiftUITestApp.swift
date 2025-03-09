@@ -17,8 +17,6 @@ struct SwiftUITestApp: App {
 	@State private var range = 0..<page
 	@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
 
-	@State private var lower: Int = 0
-
 	private struct Item: InfiniteViewItem {
 		let id: Int
 		var height: Double { cellSize }
@@ -29,15 +27,13 @@ struct SwiftUITestApp: App {
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteView { (item: Item) in
+			InfiniteView(Item.from(range: range)) { item in
 				Text("Hello \(item.id)")
 			} onLoadMore: {
-				guard lower >= -60 else { return [] }
+				guard range.lowerBound >= -60 else { return true }
 				try? await Task.sleep(for: .seconds(1))
-				defer {
-					lower -= page
-				}
-				return Item.from(range: lower..<(lower + page))
+				range = (range.lowerBound - page)..<(range.upperBound)
+				return false
 			}
 			.ignoresSafeArea()
 
