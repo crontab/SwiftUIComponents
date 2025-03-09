@@ -37,7 +37,7 @@ struct SwiftUITestApp: App {
 			}
 			.ignoresSafeArea()
 
-//			InfiniteViewImpl(action: $action) {
+//			InfiniteView(action: $action) {
 //				VStack(spacing: 0) {
 //					ForEach(range, id: \.self) { i in
 //						Text("Hello \(i + 1)")

@@ -1,5 +1,5 @@
 //
-//  InfiniteViewImpl.swift
+//  InfiniteView.swift
 //
 //  Created by Hovik Melikyan on 28.02.25.
 //
@@ -13,7 +13,7 @@ enum InfiniteViewScrollAction {
 }
 
 
-struct InfiniteViewImpl<Content: View>: UIViewRepresentable {
+struct InfiniteView<Content: View>: UIViewRepresentable {
 
 	private let headroom: Double
 	private let content: () -> Content
@@ -180,7 +180,7 @@ private let cellSize = 50.0
 		@State private var endOfData: Bool = false
 
 		var body: some View {
-			InfiniteViewImpl(headroom: headroom) {
+			InfiniteView(headroom: headroom) {
 				VStack(spacing: 0) {
 					ForEach(range, id: \.self) { i in
 						Text("Hello \(i + 1)")

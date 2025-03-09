@@ -30,7 +30,7 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 	var body: some View {
 		let headroom = model.calculateHeadroom(items: items)
-		InfiniteViewImpl(headroom: headroom) {
+		InfiniteView(headroom: headroom) {
 			VStack(spacing: 0) {
 				ForEach(items) { item in
 					cellContent(item)
