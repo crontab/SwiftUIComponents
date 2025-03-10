@@ -17,7 +17,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 
 	private let headroom: Double
 	private let content: () -> Content
-	private let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within 200px from the edge
+	private let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within half a screen from the edge
 	@Binding private var action: InfiniteViewAction?
 
 
@@ -129,7 +129,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 
 		private func edgeTest() {
 			guard !edgeLock else { return }
-			let vicinity: Double = 200
+			let vicinity = max(bounds.height / 2, 200)
 			if isCloseToTop(within: vicinity) {
 				edgeLock = true
 				Task {
