@@ -27,13 +27,17 @@ struct SwiftUITestApp: App {
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteList(Item.from(range: range)) { item in
-				Text("Hello \(item.id)")
-			} onLoadMore: {
-				guard range.lowerBound >= -60 else { return true }
-				try? await Task.sleep(for: .seconds(1))
-				range = (range.lowerBound - page)..<(range.upperBound)
-				return false
+			GeometryReader { proxy in
+				InfiniteList(Item.from(range: range)) { item in
+					InfiniteListCell(item: item, parent: proxy) {
+						Text("Hello \(item.id)")
+					}
+				} onLoadMore: {
+					guard range.lowerBound >= -60 else { return true }
+					try? await Task.sleep(for: .seconds(1))
+					range = (range.lowerBound - page)..<(range.upperBound)
+					return false
+				}
 			}
 			.ignoresSafeArea()
 

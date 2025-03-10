@@ -78,6 +78,46 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 }
 
 
+struct InfiniteListCell<Content: View, Item: InfiniteListItem>: View {
+
+	private let item: Item
+	private let content: () -> Content
+	private let hotFrame: CGRect
+	@State private var isVisible: Bool = false
+
+	init(item: Item, parent: GeometryProxy, content: @escaping () -> Content) {
+		self.item = item
+		self.content = content
+		let frame = parent.frame(in: .scrollView)
+		self.hotFrame = frame
+			.insetBy(dx: -frame.width / 2, dy: -frame.height / 2)
+	}
+
+	var body: some View {
+		Group {
+			if isVisible {
+				content()
+			}
+			else {
+				Color.clear
+			}
+		}
+		.frame(height: item.height)
+		.frame(maxWidth: .infinity)
+		.overlay {
+			// Empty overlay for tracking the real coordinates of this view
+			GeometryReader { proxy in
+				let frame = proxy.frame(in: .scrollView)
+				Color.clear
+					.onChange(of: frame) { _, frame in
+						isVisible = hotFrame.intersects(frame)
+					}
+			}
+		}
+	}
+}
+
+
 private extension Array where Element: InfiniteListItem {
 	var height: Double {
 		reduce(0) { $0 + $1.height }
@@ -88,7 +128,7 @@ private extension Array where Element: InfiniteListItem {
 // MARK: - Preview
 
 private let page = 20
-private let cellSize = 50.0
+private let cellSize = 100.0
 
 #Preview {
 
@@ -103,13 +143,17 @@ private let cellSize = 50.0
 		@State private var range = 0..<page
 
 		var body: some View {
-			InfiniteList(Item.from(range: range)) { item in
-				Text("Hello \(item.id)")
-			} onLoadMore: {
-				guard range.lowerBound >= -60 else { return true }
-				try? await Task.sleep(for: .seconds(1))
-				range = (range.lowerBound - page)..<(range.upperBound)
-				return false
+			GeometryReader { proxy in
+				InfiniteList(Item.from(range: range)) { item in
+					InfiniteListCell(item: item, parent: proxy) {
+						Text("Hello \(item.id)")
+					}
+				} onLoadMore: {
+					guard range.lowerBound >= -60 else { return true }
+					try? await Task.sleep(for: .seconds(1))
+					range = (range.lowerBound - page)..<(range.upperBound)
+					return false
+				}
 			}
 		}
 	}
