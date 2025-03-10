@@ -18,14 +18,14 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 	private let headroom: Double
 	private let content: () -> Content
 	private let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within 200px from the edge
-	@Binding private var scrollAction: InfiniteViewScrollAction?
+	@Binding private var action: InfiniteViewScrollAction?
 
 
 	init(headroom: Double, content: @escaping () -> Content, onApproachingEdge: @escaping (Edge) async -> Void) {
 		self.headroom = headroom
 		self.content = content
 		self.onApproachingEdge = onApproachingEdge
-		self._scrollAction = .constant(nil)
+		self._action = .constant(nil)
 	}
 
 
@@ -37,20 +37,20 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
 		scrollView.updateView(headroom: headroom, content: content)
 
-		switch scrollAction {
+		switch action {
 			case .none:
 				break
 
 			case .top(let animated):
 				Task {
 					scrollView.scrollToTop(animated: animated)
-					scrollAction = nil
+					action = nil
 				}
 
 			case .bottom(let animated):
 				Task {
 					scrollView.scrollToBottom(animated: animated)
-					scrollAction = nil
+					action = nil
 				}
 		}
 	}
@@ -58,7 +58,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 
 	func scrollTo(_ action: Binding<InfiniteViewScrollAction?>) -> Self {
 		var this = self
-		this._scrollAction = action
+		this._action = action
 		return this
 	}
 
@@ -105,7 +105,6 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 			guard isTracking || isDecelerating || isDragging else { return }
 			edgeTest()
 		}
-
 
 		func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
 			edgeTest()

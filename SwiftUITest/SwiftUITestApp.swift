@@ -42,7 +42,24 @@ struct SwiftUITestApp: App {
 						return true
 				}
 			}
+			.scrollTo($action)
 			.ignoresSafeArea()
+
+			.overlay(alignment: .bottomTrailing) {
+				Button {
+					action = .bottom(animated: true)
+				} label: {
+					Circle()
+						.fill(.background)
+						.shadow(color: .secondary.opacity(0.2), radius: 3, y: 2)
+						.frame(width: 44)
+						.padding(24)
+						.overlay {
+							Image(systemName: "chevron.down")
+								.offset(y: 2)
+						}
+				}
+			}
 
 //			InfiniteView(action: $action) {
 //				VStack(spacing: 0) {

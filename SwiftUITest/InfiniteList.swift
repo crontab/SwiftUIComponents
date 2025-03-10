@@ -19,18 +19,26 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 	@ViewBuilder private let cellContent: (Item, GeometryProxy) -> Content
 	private let onLoadMore: (Edge) async -> Bool
 	@State private var model = Model()
+	@Binding var action: InfiniteViewScrollAction?
 
 
 	init(_ items: [Item], cellContent: @escaping (Item, GeometryProxy) -> Content, onLoadMore: @escaping (Edge) async -> Bool) {
 		self.items = items
 		self.cellContent = cellContent
 		self.onLoadMore = onLoadMore
+		self._action = .constant(nil)
+	}
+
+
+	func scrollTo(_ action: Binding<InfiniteViewScrollAction?>) -> Self {
+		var this = self
+		this._action = action
+		return this
 	}
 
 
 	var body: some View {
 		GeometryReader { proxy in
-			let _ = {print(proxy.frame(in: .global))}()
 			let headroom = model.calculateHeadroom(items: items)
 			InfiniteView(headroom: headroom) {
 				VStack(spacing: 0) {
@@ -44,17 +52,13 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 				guard !(model.endOfData[edge] ?? false) else { return }
 				model.endOfData[edge] = await onLoadMore(edge)
 			}
-			.scrollTo($model.action)
-		}
-		.onAppear {
-			model.action = .bottom(animated: false)
+			.scrollTo($action)
 		}
 	}
 
 
 	@Observable fileprivate final class Model {
 		var endOfData: [Edge: Bool] = [:]
-		var action: InfiniteViewScrollAction? = nil
 		private var previousTopId: Item.ID?
 		private var headroom: Double = 0
 
@@ -110,6 +114,9 @@ struct LazyCell<Content: View, Item: InfiniteListItem>: View {
 			GeometryReader { proxy in
 				let frame = proxy.frame(in: .scrollView)
 				Color.clear
+					.onAppear {
+						isVisible = hotFrame.intersects(frame)
+					}
 					.onChange(of: frame) { _, frame in
 						isVisible = hotFrame.intersects(frame)
 					}
@@ -142,6 +149,7 @@ private let cellSize = 100.0
 	struct Preview: View {
 
 		@State private var range = 0..<page
+		@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
 
 		var body: some View {
 			InfiniteList(Item.from(range: range)) { item, proxy in
@@ -159,9 +167,26 @@ private let cellSize = 100.0
 						return true
 				}
 			}
+			.scrollTo($action)
+			.ignoresSafeArea()
+
+			.overlay(alignment: .bottomTrailing) {
+				Button {
+					action = .bottom(animated: true)
+				} label: {
+					Circle()
+						.fill(.background)
+						.shadow(color: .secondary.opacity(0.2), radius: 3, y: 2)
+						.frame(width: 44)
+						.padding(24)
+						.overlay {
+							Image(systemName: "chevron.down")
+								.offset(y: 2)
+						}
+				}
+			}
 		}
 	}
 
 	return Preview()
-		.ignoresSafeArea()
 }
