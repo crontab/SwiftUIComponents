@@ -17,11 +17,11 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 	private let items: [Item]
 	@ViewBuilder private let cellContent: (Item) -> Content
-	private let onLoadMore: () async -> Bool
+	private let onLoadMore: (Edge) async -> Bool
 	@State private var model = Model()
 
 
-	init(_ items: [Item], cellContent: @escaping (Item) -> Content, onLoadMore: @escaping () async -> Bool) {
+	init(_ items: [Item], cellContent: @escaping (Item) -> Content, onLoadMore: @escaping (Edge) async -> Bool) {
 		self.items = items
 		self.cellContent = cellContent
 		self.onLoadMore = onLoadMore
@@ -39,10 +39,8 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 			}
 			.frame(maxWidth: .infinity)
 		} onApproachingEdge: { edge in
-			if edge == .top {
-				guard !model.endOfData else { return }
-				model.endOfData = await onLoadMore()
-			}
+			guard !(model.endOfData[edge] ?? false) else { return }
+			model.endOfData[edge] = await onLoadMore(edge)
 		}
 		.scrollTo($model.action)
 		.onAppear {
@@ -52,7 +50,7 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 
 	@Observable fileprivate final class Model {
-		var endOfData: Bool = false
+		var endOfData: [Edge: Bool] = [:]
 		var action: InfiniteViewScrollAction? = nil
 		private var previousTopId: Item.ID?
 		private var headroom: Double = 0
@@ -78,7 +76,7 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 }
 
 
-struct InfiniteListCell<Content: View, Item: InfiniteListItem>: View {
+struct LazyCell<Content: View, Item: InfiniteListItem>: View {
 
 	private let item: Item
 	private let content: () -> Content
@@ -145,14 +143,19 @@ private let cellSize = 100.0
 		var body: some View {
 			GeometryReader { proxy in
 				InfiniteList(Item.from(range: range)) { item in
-					InfiniteListCell(item: item, parent: proxy) {
+					LazyCell(item: item, parent: proxy) {
 						Text("Hello \(item.id)")
 					}
-				} onLoadMore: {
-					guard range.lowerBound >= -60 else { return true }
-					try? await Task.sleep(for: .seconds(1))
-					range = (range.lowerBound - page)..<(range.upperBound)
-					return false
+				} onLoadMore: { edge in
+					switch edge {
+						case .top:
+							guard range.lowerBound >= -60 else { return true }
+							try? await Task.sleep(for: .seconds(1))
+							range = (range.lowerBound - page)..<(range.upperBound)
+							return false
+						default:
+							return true
+					}
 				}
 			}
 		}

@@ -29,14 +29,19 @@ struct SwiftUITestApp: App {
 
 			GeometryReader { proxy in
 				InfiniteList(Item.from(range: range)) { item in
-					InfiniteListCell(item: item, parent: proxy) {
+					LazyCell(item: item, parent: proxy) {
 						Text("Hello \(item.id)")
 					}
-				} onLoadMore: {
-					guard range.lowerBound >= -60 else { return true }
-					try? await Task.sleep(for: .seconds(1))
-					range = (range.lowerBound - page)..<(range.upperBound)
-					return false
+				} onLoadMore: { edge in
+					switch edge {
+						case .top:
+							guard range.lowerBound >= -60 else { return true }
+							try? await Task.sleep(for: .seconds(1))
+							range = (range.lowerBound - page)..<(range.upperBound)
+							return false
+						default:
+							return true
+					}
 				}
 			}
 			.ignoresSafeArea()
