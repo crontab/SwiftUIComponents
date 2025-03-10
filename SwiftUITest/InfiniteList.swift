@@ -19,7 +19,7 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 	@ViewBuilder private let cellContent: (Item, GeometryProxy) -> Content
 	private let onLoadMore: (Edge) async -> Bool
 	@State private var model = Model()
-	@Binding var action: InfiniteViewScrollAction?
+	@Binding var action: InfiniteViewAction?
 
 
 	init(_ items: [Item], cellContent: @escaping (Item, GeometryProxy) -> Content, onLoadMore: @escaping (Edge) async -> Bool) {
@@ -30,7 +30,7 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 	}
 
 
-	func scrollTo(_ action: Binding<InfiniteViewScrollAction?>) -> Self {
+	func scrollTo(_ action: Binding<InfiniteViewAction?>) -> Self {
 		var this = self
 		this._action = action
 		return this
@@ -149,7 +149,7 @@ private let cellSize = 100.0
 	struct Preview: View {
 
 		@State private var range = 0..<page
-		@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
+		@State private var action: InfiniteViewAction? = .bottom(animated: false)
 
 		var body: some View {
 			InfiniteList(Item.from(range: range)) { item, proxy in

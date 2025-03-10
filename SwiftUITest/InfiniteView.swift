@@ -7,7 +7,7 @@
 import SwiftUI
 
 
-enum InfiniteViewScrollAction {
+enum InfiniteViewAction {
 	case top(animated: Bool)
 	case bottom(animated: Bool)
 }
@@ -18,7 +18,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 	private let headroom: Double
 	private let content: () -> Content
 	private let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within 200px from the edge
-	@Binding private var action: InfiniteViewScrollAction?
+	@Binding private var action: InfiniteViewAction?
 
 
 	init(headroom: Double, content: @escaping () -> Content, onApproachingEdge: @escaping (Edge) async -> Void) {
@@ -56,7 +56,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 	}
 
 
-	func scrollTo(_ action: Binding<InfiniteViewScrollAction?>) -> Self {
+	func scrollTo(_ action: Binding<InfiniteViewAction?>) -> Self {
 		var this = self
 		this._action = action
 		return this
@@ -174,7 +174,7 @@ private let cellSize = 50.0
 
 	struct Preview: View {
 		@State private var range = 0..<page
-		@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
+		@State private var action: InfiniteViewAction? = .bottom(animated: false)
 		@State private var headroom: Double = 0 // Double(page) * cellSize
 		@State private var endOfData: Bool = false
 

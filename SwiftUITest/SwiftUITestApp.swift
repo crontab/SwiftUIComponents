@@ -15,7 +15,7 @@ private let cellSize = 50.0
 @main
 struct SwiftUITestApp: App {
 	@State private var range = 0..<page
-	@State private var action: InfiniteViewScrollAction? = .bottom(animated: false)
+	@State private var action: InfiniteViewAction? = .bottom(animated: false)
 
 	private struct Item: InfiniteListItem {
 		let id: Int
