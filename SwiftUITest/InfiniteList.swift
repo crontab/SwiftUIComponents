@@ -16,12 +16,12 @@ protocol InfiniteListItem: Identifiable {
 struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 	private let items: [Item]
-	@ViewBuilder private let cellContent: (Item) -> Content
+	@ViewBuilder private let cellContent: (Item, GeometryProxy) -> Content
 	private let onLoadMore: (Edge) async -> Bool
 	@State private var model = Model()
 
 
-	init(_ items: [Item], cellContent: @escaping (Item) -> Content, onLoadMore: @escaping (Edge) async -> Bool) {
+	init(_ items: [Item], cellContent: @escaping (Item, GeometryProxy) -> Content, onLoadMore: @escaping (Edge) async -> Bool) {
 		self.items = items
 		self.cellContent = cellContent
 		self.onLoadMore = onLoadMore
@@ -29,20 +29,23 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 
 	var body: some View {
-		let headroom = model.calculateHeadroom(items: items)
-		InfiniteView(headroom: headroom) {
-			VStack(spacing: 0) {
-				ForEach(items) { item in
-					cellContent(item)
-						.frame(height: item.height)
+		GeometryReader { proxy in
+			let _ = {print(proxy.frame(in: .global))}()
+			let headroom = model.calculateHeadroom(items: items)
+			InfiniteView(headroom: headroom) {
+				VStack(spacing: 0) {
+					ForEach(items) { item in
+						cellContent(item, proxy)
+							.frame(height: item.height)
+					}
 				}
+				.frame(maxWidth: .infinity)
+			} onApproachingEdge: { edge in
+				guard !(model.endOfData[edge] ?? false) else { return }
+				model.endOfData[edge] = await onLoadMore(edge)
 			}
-			.frame(maxWidth: .infinity)
-		} onApproachingEdge: { edge in
-			guard !(model.endOfData[edge] ?? false) else { return }
-			model.endOfData[edge] = await onLoadMore(edge)
+			.scrollTo($model.action)
 		}
-		.scrollTo($model.action)
 		.onAppear {
 			model.action = .bottom(animated: false)
 		}
@@ -141,21 +144,19 @@ private let cellSize = 100.0
 		@State private var range = 0..<page
 
 		var body: some View {
-			GeometryReader { proxy in
-				InfiniteList(Item.from(range: range)) { item in
-					LazyCell(item: item, parent: proxy) {
-						Text("Hello \(item.id)")
-					}
-				} onLoadMore: { edge in
-					switch edge {
-						case .top:
-							guard range.lowerBound >= -60 else { return true }
-							try? await Task.sleep(for: .seconds(1))
-							range = (range.lowerBound - page)..<(range.upperBound)
-							return false
-						default:
-							return true
-					}
+			InfiniteList(Item.from(range: range)) { item, proxy in
+				LazyCell(item: item, parent: proxy) {
+					Text("Hello \(item.id)")
+				}
+			} onLoadMore: { edge in
+				switch edge {
+					case .top:
+						guard range.lowerBound >= -60 else { return true }
+						try? await Task.sleep(for: .seconds(1))
+						range = (range.lowerBound - page)..<(range.upperBound)
+						return false
+					default:
+						return true
 				}
 			}
 		}
