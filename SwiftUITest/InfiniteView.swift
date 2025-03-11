@@ -127,14 +127,16 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 			}
 		}
 
-		private func edgeTest() {
+		private func edgeTest(recurse: Int = 0) {
 			guard !edgeLock else { return }
+			guard recurse < 4 else { return }
 			let vicinity = max(bounds.height / 2, 200)
 			if isCloseToTop(within: vicinity) {
 				edgeLock = true
 				Task {
 					await onApproachingEdge(.top)
 					edgeLock = false
+					edgeTest(recurse: recurse + 1)
 				}
 			}
 			else if isCloseToBottom(within: vicinity) {
@@ -142,6 +144,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 				Task {
 					await onApproachingEdge(.bottom)
 					edgeLock = false
+					edgeTest(recurse: recurse + 1)
 				}
 			}
 		}
