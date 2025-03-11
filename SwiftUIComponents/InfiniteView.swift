@@ -13,6 +13,20 @@ enum InfiniteViewAction {
 }
 
 
+/// `InfiniteView`: a view that can extend its top and bottom contents without disrupting the interactive scrolling.
+/// Useful for chat apps. Currently only vertical scrolling is supported.
+///
+/// You can add cotnent to the top of the scroll content and specify the overall height of the additional content using the
+/// `headroom` parameter. The scroller will maintain its position even if the update happens during interactive scrolling.
+///
+/// The `onApproachingEdge` closure is called whenever the user approaches top or bottom edges of the content
+/// while scrolling. This closure is `async`, meaning that you can perform e.g. a network call for additional data.
+///
+/// The `scrollTo()` modifier can programmatically scroll to top or bottom, animated or not.
+///
+/// Check out the preview of this view at the bottom of the file for example usage.
+///
+/// See also: `InfiniteList`, a component based on `InfiniteView`.
 struct InfiniteView<Content: View>: UIViewRepresentable {
 
 	private let headroom: Double

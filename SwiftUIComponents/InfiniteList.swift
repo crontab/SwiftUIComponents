@@ -12,6 +12,23 @@ protocol InfiniteListItem: Identifiable {
 }
 
 
+/// `InfiniteList`: a component is based on `InfiniteView`; it maintains a potentially infinite scrollable list of
+/// items with known height.
+///
+/// Each item should conform to `InfiniteListItem` and be `Identifiable` as well as should provide its height
+/// on screen, considering the width of the item extends to the full width of the parent.
+///
+/// `cellContent` provides content for each item.
+///
+/// `onLoadMore` is a closure that's called whenever the scroller approaches its top or bottom edges; it gives you a
+/// chance to load additional items asynchronously. This closure should return `true` if there's no more data left in
+/// that direction.
+///
+/// The `scrollTo()` modifier can programmatically scroll to top or bottom, animated or not.
+///
+/// See the preview at the bottom of this file for example usage.
+///
+/// Also see the `LazyCell` component below.
 struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
 	private let items: [Item]
@@ -82,6 +99,9 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 }
 
 
+/// `LazyCell` can be used in conjunction with `InfiniteList` for skipping rendering when a view is not
+/// visible on the screen. This is useful when you have a large number of views that e.g. contain media, such as
+/// images.
 struct LazyCell<Content: View, Item: InfiniteListItem>: View {
 
 	private let item: Item
@@ -175,7 +195,7 @@ private let cellSize = 100.0
 				} label: {
 					Circle()
 						.fill(.background)
-						.shadow(color: .secondary.opacity(0.2), radius: 3, y: 2)
+						.shadow(color: Color(uiColor: .placeholderText), radius: 3, y: 1)
 						.frame(width: 44)
 						.padding(24)
 						.overlay {
