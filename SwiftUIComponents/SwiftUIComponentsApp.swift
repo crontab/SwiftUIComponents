@@ -7,8 +7,8 @@
 import SwiftUI
 
 
-private let page = 20
-private let cellSize = 50.0
+private let page = 30
+private let cellSize = 100.0
 
 
 @main
@@ -26,14 +26,20 @@ struct SwiftUIComponentsApp: App {
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteList(Item.from(range: range)) { item, proxy in
-				LazyCell(item: item, parent: proxy) {
-					Text("Hello \(item.id)")
+			InfiniteList(Item.from(range: range)) { item in
+				HStack {
+					Text("Row \(item.id)")
+				}
+				.frame(maxWidth: .infinity, maxHeight: .infinity)
+				.overlay(alignment: .bottom) {
+					Rectangle()
+						.fill(.quaternary)
+						.frame(height: 1)
 				}
 			} onLoadMore: { edge in
 				switch edge {
 					case .top:
-						guard range.lowerBound >= -60 else { return true }
+						guard range.lowerBound >= -90 else { return true }
 						try? await Task.sleep(for: .seconds(1))
 						range = (range.lowerBound - page)..<(range.upperBound)
 						return false
