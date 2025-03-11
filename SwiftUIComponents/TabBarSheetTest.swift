@@ -51,7 +51,7 @@ struct TabBarSheetTest: View {
 				.shadow(color: .primary.opacity(0.3), radius: 0.5)
 				.ignoresSafeArea()
 		}
-		.tabBarSheet(minHeight: minHeight, maxHeight: maxHeight, maximized: $maximized)
+		.drawer(range: minHeight...maxHeight, placement: .bottom, maximized: $maximized)
 		.onHeightChange { newHeight in
 			currentHeight = newHeight
 			print(newHeight)
