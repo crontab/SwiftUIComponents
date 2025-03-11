@@ -1,6 +1,5 @@
 //
 //  ContentView.swift
-//  SwiftUITest
 //
 //  Created by Hovik Melikyan on 18.06.24.
 //

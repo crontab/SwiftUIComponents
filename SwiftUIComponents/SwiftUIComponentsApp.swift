@@ -1,6 +1,5 @@
 //
-//  SwiftUITestApp.swift
-//  SwiftUITest
+//  SwiftUIComponentsApp.swift
 //
 //  Created by Hovik Melikyan on 29.03.24.
 //
@@ -13,7 +12,7 @@ private let cellSize = 50.0
 
 
 @main
-struct SwiftUITestApp: App {
+struct SwiftUIComponentsApp: App {
 	@State private var range = 0..<page
 	@State private var action: InfiniteViewAction? = .bottom(animated: false)
 

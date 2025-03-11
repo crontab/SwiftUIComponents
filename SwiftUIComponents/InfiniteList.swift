@@ -1,6 +1,5 @@
 //
 //  InfiniteList.swift
-//  SwiftUITest
 //
 //  Created by Hovik Melikyan on 02.03.25.
 //
