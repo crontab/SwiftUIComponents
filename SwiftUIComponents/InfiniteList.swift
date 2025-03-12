@@ -26,31 +26,16 @@ protocol InfiniteListItem: Identifiable {
 /// chance to load additional items asynchronously. This closure should return `true` if there's no more data left in
 /// that direction.
 ///
-/// The `scrollTo()` modifier can programmatically scroll to top or bottom, animated or not.
-///
 /// See the preview at the bottom of this file for example usage.
 struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 
-	private let items: [Item]
-	@ViewBuilder private let cellContent: (Item) -> Content
-	private let onLoadMore: (Edge) async -> Bool
-	@State private var model = Model()
+	let items: [Item]
 	@Binding var action: InfiniteViewAction?
+	var edgeInsets: EdgeInsets = .zero
+	@ViewBuilder let cellContent: (Item) -> Content
+	let onLoadMore: (Edge) async -> Bool
 
-
-	init(_ items: [Item], cellContent: @escaping (Item) -> Content, onLoadMore: @escaping (Edge) async -> Bool) {
-		self.items = items
-		self.cellContent = cellContent
-		self.onLoadMore = onLoadMore
-		self._action = .constant(nil)
-	}
-
-
-	func scrollTo(_ action: Binding<InfiniteViewAction?>) -> Self {
-		var this = self
-		this._action = action
-		return this
-	}
+	@State private var model = Model()
 
 
 	var body: some View {
@@ -59,7 +44,7 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 			let frame = proxy.frame(in: .local)
 			let hotFrame = frame
 				.insetBy(dx: -frame.width / 2, dy: -frame.height / 2)
-			InfiniteView(headroom: headroom) {
+			InfiniteView(headroom: headroom, action: $action, edgeInsets: edgeInsets) {
 				VStack(spacing: 0) {
 					ForEach(items) { item in
 						GeometryReader { itemProxy in
@@ -81,7 +66,6 @@ struct InfiniteList<Content: View, Item: InfiniteListItem>: View {
 				guard !(model.endOfData[edge] ?? false) else { return }
 				model.endOfData[edge] = await onLoadMore(edge)
 			}
-			.scrollTo($action)
 		}
 	}
 
@@ -138,7 +122,7 @@ private let cellSize = 100.0
 		@State private var action: InfiniteViewAction? = .bottom(animated: false)
 
 		var body: some View {
-			InfiniteList(Item.from(range: range)) { item in
+			InfiniteList(items: Item.from(range: range), action: $action) { item in
 				HStack {
 					Text("Row \(item.id)")
 				}
@@ -159,8 +143,8 @@ private let cellSize = 100.0
 						return true
 				}
 			}
-			.scrollTo($action)
 			.ignoresSafeArea()
+			.background(.quaternary.opacity(0.5))
 
 			.overlay(alignment: .bottomTrailing) {
 				Button {

@@ -61,8 +61,8 @@
 		361431EB2BB6891800FA71B4 /* SwiftUIComponents */ = {
 			isa = PBXGroup;
 			children = (
-				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
+				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
 				363600EB2C81027200DF57DB /* StripesView.swift */,
 				361431EE2BB6891800FA71B4 /* PagingScrollView.swift */,
 				36F2A3712D8034C8007BACCF /* Drawer.swift */,

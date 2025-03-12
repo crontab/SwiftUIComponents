@@ -22,25 +22,16 @@ enum InfiniteViewAction {
 /// The `onApproachingEdge` closure is called whenever the user approaches top or bottom edges of the content
 /// while scrolling. This closure is `async`, meaning that you can perform e.g. a network call for additional data.
 ///
-/// The `scrollTo()` modifier can programmatically scroll to top or bottom, animated or not.
-///
 /// Check out the preview of this view at the bottom of the file for example usage.
 ///
 /// See also: `InfiniteList`, a component based on `InfiniteView`.
 struct InfiniteView<Content: View>: UIViewRepresentable {
 
-	private let headroom: Double
-	private let content: () -> Content
-	private let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within half a screen from the edge
-	@Binding private var action: InfiniteViewAction?
-
-
-	init(headroom: Double, content: @escaping () -> Content, onApproachingEdge: @escaping (Edge) async -> Void) {
-		self.headroom = headroom
-		self.content = content
-		self.onApproachingEdge = onApproachingEdge
-		self._action = .constant(nil)
-	}
+	let headroom: Double
+	@Binding var action: InfiniteViewAction?
+	var edgeInsets: EdgeInsets = .zero
+	let content: () -> Content
+	let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within half a screen from the edge
 
 
 	func makeUIView(context: Context) -> HostedScrollView {
@@ -49,7 +40,7 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 
 
 	func updateUIView(_ scrollView: HostedScrollView, context: Context) {
-		scrollView.updateView(headroom: headroom, content: content)
+		scrollView.updateView(headroom: headroom, edgeInsets: edgeInsets, content: content)
 
 		switch action {
 			case .none:
@@ -67,13 +58,6 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 					action = nil
 				}
 		}
-	}
-
-
-	func scrollTo(_ action: Binding<InfiniteViewAction?>) -> Self {
-		var this = self
-		this._action = action
-		return this
 	}
 
 
@@ -101,14 +85,16 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 		}
 
 
-		fileprivate func updateView(headroom: Double, content: () -> Content) {
+		fileprivate func updateView(headroom: Double, edgeInsets: EdgeInsets, content: () -> Content) {
 			host.rootView = content()
 			frame.size.width = 0 // this is required on the Mac for some reason
 			host.view.sizeToFit()
 			let newHeight = host.view.bounds.height
-			let blankSpace = max(0, pageHeight - newHeight) // ensure small content is at the bottom
+			let blankSpace = max(0, pageHeight - newHeight - edgeInsets.top - edgeInsets.bottom) // ensure small content is at the bottom
 			host.view.frame.origin.y = -headroom
-			contentInset.top = headroom + blankSpace
+			var edgeInsets = edgeInsets.uiEdgeInsets
+			edgeInsets.top += headroom + blankSpace
+			contentInset = edgeInsets
 			contentSize.height = newHeight - headroom
 		}
 
@@ -182,6 +168,13 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 }
 
 
+extension EdgeInsets {
+	static var zero: Self { .init(top: 0, leading: 0, bottom: 0, trailing: 0) }
+
+	var uiEdgeInsets: UIEdgeInsets { .init(top: top, left: leading, bottom: bottom, right: trailing) }
+}
+
+
 // MARK: - Preview
 
 private let page = 20
@@ -196,7 +189,7 @@ private let cellSize = 50.0
 		@State private var endOfData: Bool = false
 
 		var body: some View {
-			InfiniteView(headroom: headroom) {
+			InfiniteView(headroom: headroom, action: $action) {
 				VStack(spacing: 0) {
 					ForEach(range, id: \.self) { i in
 						Text("Hello \(i + 1)")
@@ -219,7 +212,6 @@ private let cellSize = 50.0
 						break
 				}
 			}
-			.scrollTo($action)
 			.ignoresSafeArea()
 		}
 	}
