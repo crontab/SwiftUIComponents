@@ -26,7 +26,7 @@ struct SwiftUIComponentsApp: App {
 	var body: some Scene {
 		WindowGroup {
 
-			InfiniteList(Item.from(range: range)) { item in
+			InfiniteList(items: Item.from(range: range), action: $action) { item in
 				HStack {
 					Text("Row \(item.id)")
 				}
@@ -47,7 +47,6 @@ struct SwiftUIComponentsApp: App {
 						return true
 				}
 			}
-			.scrollTo($action)
 			.ignoresSafeArea()
 
 			.overlay(alignment: .bottomTrailing) {
