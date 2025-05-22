@@ -77,8 +77,8 @@ struct SwiftUIComponentsApp: App {
 //					case .top:
 //						action = .didAddTopContent(height: 0)
 //						range = (range.lowerBound - 20)..<range.upperBound
-////					case .bottom:
-////						range = range.lowerBound..<(range.upperBound + 5)
+//					case .bottom:
+//						range = range.lowerBound..<(range.upperBound + 5)
 //					default:
 //						break
 //				}

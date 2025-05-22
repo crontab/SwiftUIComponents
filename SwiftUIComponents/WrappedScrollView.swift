@@ -110,6 +110,7 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 		init(host: UIHostingController<Content>, refreshAction: RefreshAction?) {
 			self.host = host
 			super.init(frame: .zero)
+			host.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
 			if let refreshAction {
 				let refreshControl = UIRefreshControl()
@@ -139,22 +140,21 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 }
 
 
-// MARK: Lazy page for WrappedScrollView
+// MARK: Lazy cell for WrappedScrollView
 
-struct LazyPage<C: View>: View {
-	private let parentWidth, parentHeight: Double
+struct LazyCell<C: View>: View {
+	private let debugName: String?
 	private let hotFrame: CGRect
 	private let content: () -> C
 
 	@State private var isVisible: Bool = false
 
 
-	init(proxy: GeometryProxy, content: @escaping () -> C) {
-		let frame = proxy.frame(in: .global)
-		parentWidth = frame.width
-		parentHeight = frame.height
-		hotFrame = frame
-			.insetBy(dx: -parentWidth / 2, dy: -parentHeight / 2)
+	init(debugName: String? = nil, content: @escaping () -> C) {
+		self.debugName = debugName
+		let screen = UIScreen.main.bounds
+		hotFrame = screen
+			.insetBy(dx: -screen.width / 2, dy: -screen.height / 2)
 		self.content = content
 	}
 
@@ -168,9 +168,6 @@ struct LazyPage<C: View>: View {
 				Color.clear
 			}
 		}
-
-		// Ensure the cell always extends to the size of its parent
-		.frame(width: parentWidth, height: parentHeight)
 
 		// Empty overlay for tracking the real coordinates of this view
 		.overlay {
@@ -191,28 +188,28 @@ struct LazyPage<C: View>: View {
 
 
 #Preview {
-	GeometryReader { proxy in
-		WrappedScrollView(.vertical, action: .constant(.offset(0, animated: false))) {
-			VStack(spacing: 0) {
-				ForEach(0...5, id: \.self) { i in
-					LazyPage(proxy: proxy) {
-						Text("Page \(i)")
-							.onAppear {
-								print("Draw", i)
-							}
-					}
-					.background(.gray.opacity(0.1))
-					.border(.quaternary)
+	WrappedScrollView(.vertical, action: .constant(.offset(0, animated: false))) {
+		VStack(spacing: 0) {
+			ForEach(0...5, id: \.self) { i in
+				LazyCell(debugName: "\(i)") {
+					Text("Page \(i)")
+						.onAppear {
+							print("Draw", i)
+						}
 				}
+				.frame(maxWidth: .infinity)
+				.frame(height: 600)
+				.background(.gray.opacity(0.1))
+				.border(.quaternary)
 			}
 		}
-		.onRefresh {
-			try? await Task.sleep(for: .seconds(2))
-			print("Refresh")
-		}
-		.onScroll { offset in
-			print("Offset", offset)
-		}
+	}
+	.onRefresh {
+		try? await Task.sleep(for: .seconds(2))
+		print("Refresh")
+	}
+	.onScroll { offset in
+//		print("Offset", offset)
 	}
 	.ignoresSafeArea()
 }
