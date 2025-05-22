@@ -1,27 +1,10 @@
 //
-//  PagingScrollView.swift
+//  WrappedScrollView.swift
 //
 //  Created by Hovik Melikyan on 23.03.24.
 //
 
 import SwiftUI
-
-
-// This is a SwiftUI wrapper around UIScrollView that provides paging functionality (scroll and snap to a page the size
-// of the view itself) for iOS versions prior to 17. Tested on iOS 16 with Swift 5.10.
-//
-// Use the binding `action` argument to move the scroller to a specified position. The binding `state` argument is for
-// the scroller's feedback: it returns the underlying UIScrollView object in case you need to additionally configure
-// it, and also the current page number which is updated as the user drags the scroller.
-//
-// The `refreshAction()` modifier acts like SwiftUI's `refreshable()`.
-//
-// `LazyPage()` provides a lazy rendering mechanism for PagingScrollView. You can wrap the contents of each page into
-// this view, presumably within a `ForEach()` loop. The reason this component exists is that `LazyXView()` standard
-// components don't work as intended under our PagingScrollView, since they expect the parent view to be SwiftUI's
-// native `ScrollView` instead.
-//
-// (And sorry for the tabs, I like them though I know those who use spaces earn more money on average 😜)
 
 
 enum ScrollViewAction {
@@ -36,15 +19,17 @@ struct ScrollViewState: Equatable {
 }
 
 
-struct PagingScrollView<Content: View>: UIViewRepresentable {
+struct WrappedScrollView<Content: View>: UIViewRepresentable {
 
 	typealias RefreshAction = () async -> Void
+	typealias OnScrollAction = (Double) -> Void
 
 	@Binding private var action: ScrollViewAction
 	@Binding private var state: ScrollViewState
 	private let axis: Axis
 	private let content: () -> Content
 	private var refreshAction: RefreshAction?
+	private var onScrollAction: OnScrollAction?
 
 
 	init(_ axis: Axis, action: Binding<ScrollViewAction> = .constant(.idle), state: Binding<ScrollViewState> = .constant(.init()), @ViewBuilder content: @escaping () -> Content) {
@@ -55,9 +40,16 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 	}
 
 
-	func refreshAction(_ action: @escaping RefreshAction) -> Self {
+	func onRefresh(_ action: @escaping RefreshAction) -> Self {
 		var view = self
 		view.refreshAction = action
+		return view
+	}
+
+
+	func onScroll(_ action: @escaping OnScrollAction) -> Self {
+		var view = self
+		view.onScrollAction = action
 		return view
 	}
 
@@ -111,9 +103,9 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 
 
 	final class Coordinator: NSObject, UIScrollViewDelegate {
-		let parent: PagingScrollView
+		let parent: WrappedScrollView
 
-		init(_ parent: PagingScrollView) {
+		init(_ parent: WrappedScrollView) {
 			self.parent = parent
 		}
 
@@ -124,6 +116,7 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 				Task {
 					let offset = parent.axis == .horizontal ? scrollView.contentOffset.x : scrollView.contentOffset.y
 					parent.state.page = Int(round(offset / size))
+					parent.onScrollAction?(offset)
 				}
 			}
 		}
@@ -153,7 +146,7 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 		}
 
 		required init?(coder: NSCoder) {
-			fatalError("init(coder:) has not been implemented")
+			preconditionFailure()
 		}
 
 		fileprivate func updateView(content: () -> Content) {
@@ -165,7 +158,7 @@ struct PagingScrollView<Content: View>: UIViewRepresentable {
 }
 
 
-// MARK: Lazy page for PagingScrollView
+// MARK: Lazy page for WrappedScrollView
 
 struct LazyPage<C: View>: View {
 	private let parentWidth, parentHeight: Double
@@ -207,8 +200,8 @@ struct LazyPage<C: View>: View {
 						// This always loads the first two pages even if the initial page is set to non-zero a bit later
 						isVisible = hotFrame.intersects(frame)
 					}
-					.onChange(of: frame) { old, new in
-						isVisible = hotFrame.intersects(new)
+					.onChange(of: frame) { oldValue, newValue in
+						isVisible = hotFrame.intersects(newValue)
 					}
 			}
 		}
@@ -218,7 +211,7 @@ struct LazyPage<C: View>: View {
 
 #Preview {
 	GeometryReader { proxy in
-		PagingScrollView(.vertical, action: .constant(.page(0, animated: false))) {
+		WrappedScrollView(.vertical, action: .constant(.page(0, animated: false))) {
 			VStack(spacing: 0) {
 				ForEach(0...5, id: \.self) { i in
 					LazyPage(proxy: proxy) {
@@ -231,9 +224,12 @@ struct LazyPage<C: View>: View {
 				}
 			}
 		}
-		.refreshAction {
+		.onRefresh {
 			try? await Task.sleep(for: .seconds(2))
 			print("Refresh")
+		}
+		.onScroll { offset in
+			print("Offset", offset)
 		}
 	}
 	.ignoresSafeArea()
