@@ -9,7 +9,7 @@ import SwiftUI
 
 enum ScrollViewAction {
 	case idle
-	case offset(_ offset: Double, animated: Bool)
+	case offset(_ offset: Double, animated: Bool = false)
 }
 
 
@@ -53,9 +53,19 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 		let scrollView = HostedScrollView(host: host, refreshAction: refreshAction)
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
+		scrollView.contentInsetAdjustmentBehavior = .never
 		scrollView.delegate = context.coordinator
 
+		host.view.translatesAutoresizingMaskIntoConstraints = false
 		scrollView.addSubview(host.view)
+
+		NSLayoutConstraint.activate([
+			host.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+			host.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+			host.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
+			host.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+			host.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+		])
 
 		return scrollView
 	}
@@ -110,7 +120,6 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 		init(host: UIHostingController<Content>, refreshAction: RefreshAction?) {
 			self.host = host
 			super.init(frame: .zero)
-			host.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
 			if let refreshAction {
 				let refreshControl = UIRefreshControl()
@@ -188,7 +197,7 @@ struct LazyCell<C: View>: View {
 
 
 #Preview {
-	WrappedScrollView(.vertical, action: .constant(.offset(0, animated: false))) {
+	WrappedScrollView(.vertical, action: .constant(.idle)) {
 		VStack(spacing: 0) {
 			ForEach(0...5, id: \.self) { i in
 				LazyCell(debugName: "\(i)") {
@@ -203,6 +212,7 @@ struct LazyCell<C: View>: View {
 				.border(.quaternary)
 			}
 		}
+		.ignoresSafeArea()
 	}
 	.onRefresh {
 		try? await Task.sleep(for: .seconds(2))
