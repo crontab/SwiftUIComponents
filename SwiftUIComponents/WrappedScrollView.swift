@@ -9,13 +9,7 @@ import SwiftUI
 
 enum ScrollViewAction {
 	case idle
-	case page(_ page: Int, animated: Bool)
-}
-
-
-struct ScrollViewState: Equatable {
-	var view: UIScrollView?
-	var page: Int = 0
+	case offset(_ offset: Double, animated: Bool)
 }
 
 
@@ -25,16 +19,14 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 	typealias OnScrollAction = (Double) -> Void
 
 	@Binding private var action: ScrollViewAction
-	@Binding private var state: ScrollViewState
 	private let axis: Axis
 	private let content: () -> Content
 	private var refreshAction: RefreshAction?
 	private var onScrollAction: OnScrollAction?
 
 
-	init(_ axis: Axis, action: Binding<ScrollViewAction> = .constant(.idle), state: Binding<ScrollViewState> = .constant(.init()), @ViewBuilder content: @escaping () -> Content) {
+	init(_ axis: Axis, action: Binding<ScrollViewAction> = .constant(.idle), @ViewBuilder content: @escaping () -> Content) {
 		self._action = action
-		self._state = state
 		self.axis = axis
 		self.content = content
 	}
@@ -59,16 +51,11 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 		host.view.backgroundColor = .clear
 
 		let scrollView = HostedScrollView(host: host, refreshAction: refreshAction)
-		scrollView.isPagingEnabled = true
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
 		scrollView.delegate = context.coordinator
 
 		scrollView.addSubview(host.view)
-
-		Task {
-			state.view = scrollView
-		}
 
 		return scrollView
 	}
@@ -81,14 +68,9 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 			case .idle:
 				break
 
-			case .page(let page, let animated):
-				DispatchQueue.main.async {
-					let offset = Double(page) * (axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height)
-					let size = axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height
+			case .offset(let offset, let animated):
+				Task { @MainActor in
 					scrollView.setContentOffset(CGPoint(x: axis == .horizontal ? offset : 0, y: axis == .vertical ? offset : 0), animated: animated)
-					if size > 0 {
-						state.page = Int(round(offset / size))
-					}
 					Task {
 						action = .idle
 					}
@@ -115,7 +97,6 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 				// Triggered only if interactive
 				Task {
 					let offset = parent.axis == .horizontal ? scrollView.contentOffset.x : scrollView.contentOffset.y
-					parent.state.page = Int(round(offset / size))
 					parent.onScrollAction?(offset)
 				}
 			}
@@ -211,7 +192,7 @@ struct LazyPage<C: View>: View {
 
 #Preview {
 	GeometryReader { proxy in
-		WrappedScrollView(.vertical, action: .constant(.page(0, animated: false))) {
+		WrappedScrollView(.vertical, action: .constant(.offset(0, animated: false))) {
 			VStack(spacing: 0) {
 				ForEach(0...5, id: \.self) { i in
 					LazyPage(proxy: proxy) {
@@ -221,6 +202,7 @@ struct LazyPage<C: View>: View {
 							}
 					}
 					.background(.gray.opacity(0.1))
+					.border(.quaternary)
 				}
 			}
 		}
