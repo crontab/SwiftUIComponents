@@ -152,15 +152,13 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 // MARK: Lazy cell for WrappedScrollView
 
 struct LazyCell<C: View>: View {
-	private let debugName: String?
 	private let hotFrame: CGRect
 	private let content: () -> C
 
 	@State private var isVisible: Bool = false
 
 
-	init(debugName: String? = nil, content: @escaping () -> C) {
-		self.debugName = debugName
+	init(content: @escaping () -> C) {
 		let screen = UIScreen.main.bounds
 		hotFrame = screen
 			.insetBy(dx: -screen.width / 2, dy: -screen.height / 2)
@@ -169,27 +167,23 @@ struct LazyCell<C: View>: View {
 
 
 	var body: some View {
-		Group {
-			if isVisible {
-				content()
+		GeometryReader { proxy in // NB: this somehow also helps with rendering the cells only once and not with each scroll move, so don't touch it
+			let frame = proxy.frame(in: .global)
+			Group {
+				if isVisible {
+					content()
+						.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+				}
+				else {
+					Color.clear
+				}
 			}
-			else {
-				Color.clear
+			.onAppear {
+				// This always loads the first two pages even if the initial page is set to non-zero a bit later
+				isVisible = hotFrame.intersects(frame)
 			}
-		}
-
-		// Empty overlay for tracking the real coordinates of this view
-		.overlay {
-			GeometryReader { proxy in
-				let frame = proxy.frame(in: .global)
-				Color.clear
-					.onAppear {
-						// This always loads the first two pages even if the initial page is set to non-zero a bit later
-						isVisible = hotFrame.intersects(frame)
-					}
-					.onChange(of: frame) { oldValue, newValue in
-						isVisible = hotFrame.intersects(newValue)
-					}
+			.onChange(of: frame) { oldValue, newValue in
+				isVisible = hotFrame.intersects(newValue)
 			}
 		}
 	}
@@ -197,18 +191,19 @@ struct LazyCell<C: View>: View {
 
 
 #Preview {
-	WrappedScrollView(.vertical, action: .constant(.idle)) {
+	WrappedScrollView(.vertical, action: .constant(.offset(2000))) {
 		VStack(spacing: 0) {
 			ForEach(0...5, id: \.self) { i in
-				LazyCell(debugName: "\(i)") {
-					Text("Page \(i)")
-						.onAppear {
-							print("Draw", i)
-						}
+				LazyCell {
+					VStack {
+						Text("Page \(i)")
+							.onAppear {
+								print("Draw", i)
+							}
+					}
 				}
-				.frame(maxWidth: .infinity)
 				.frame(height: 600)
-				.background(.gray.opacity(0.1))
+				.background(.quaternary)
 				.border(.quaternary)
 			}
 		}
