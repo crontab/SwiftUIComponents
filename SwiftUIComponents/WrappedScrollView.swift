@@ -1,7 +1,7 @@
 //
 //  WrappedScrollView.swift
 //
-//  Created by Hovik Melikyan on 23.03.24.
+//  Created by Hovik Melikyan on 22.05.25.
 //
 
 import SwiftUI
@@ -15,27 +15,19 @@ enum ScrollViewAction {
 
 struct WrappedScrollView<Content: View>: UIViewRepresentable {
 
-	typealias RefreshAction = () async -> Void
 	typealias OnScrollAction = (Double) -> Void
 
-	@Binding private var action: ScrollViewAction
 	private let axis: Axis
+	@Binding private var action: ScrollViewAction
 	private let content: () -> Content
-	private var refreshAction: RefreshAction?
 	private var onScrollAction: OnScrollAction?
+	private var ignoreSafeArea: Bool = false
 
 
-	init(_ axis: Axis, action: Binding<ScrollViewAction> = .constant(.idle), @ViewBuilder content: @escaping () -> Content) {
-		self._action = action
+	init(_ axis: Axis = .vertical, action: Binding<ScrollViewAction> = .constant(.idle), @ViewBuilder content: @escaping () -> Content) {
 		self.axis = axis
+		self._action = action
 		self.content = content
-	}
-
-
-	func onRefresh(_ action: @escaping RefreshAction) -> Self {
-		var view = self
-		view.refreshAction = action
-		return view
 	}
 
 
@@ -46,14 +38,20 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 	}
 
 
+	func contentIgnoresSafeArea() -> Self {
+		var view = self
+		view.ignoreSafeArea = true
+		return view
+	}
+
+
 	func makeUIView(context: Context) -> HostedScrollView {
 		let host = UIHostingController(rootView: content())
 		host.view.backgroundColor = .clear
 
-		let scrollView = HostedScrollView(host: host, refreshAction: refreshAction)
+		let scrollView = HostedScrollView(host: host, ignoreSafeArea: ignoreSafeArea)
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
-		scrollView.contentInsetAdjustmentBehavior = .never
 		scrollView.delegate = context.coordinator
 
 		host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -116,24 +114,16 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 
 	final class HostedScrollView: UIScrollView {
 		private let host: UIHostingController<Content>
+		private let ignoreSafeArea: Bool
 
-		init(host: UIHostingController<Content>, refreshAction: RefreshAction?) {
+		init(host: UIHostingController<Content>, ignoreSafeArea: Bool) {
 			self.host = host
+			self.ignoreSafeArea = ignoreSafeArea
 			super.init(frame: .zero)
+		}
 
-			if let refreshAction {
-				let refreshControl = UIRefreshControl()
-				refreshControl.addAction(UIAction { [weak self]_ in
-					guard let self else { return }
-					Task {
-						await refreshAction()
-						refreshControl.endRefreshing()
-						// Fix for the scroller not going all the way to the top if the parent view has ingoreSafeArea()
-						self.setContentOffset(.init(x: 0, y: 0), animated: true)
-					}
-				}, for: .valueChanged)
-				self.refreshControl = refreshControl
-			}
+		override var safeAreaInsets: UIEdgeInsets {
+			ignoreSafeArea ? .zero : super.safeAreaInsets
 		}
 
 		required init?(coder: NSCoder) {
@@ -191,7 +181,7 @@ struct LazyCell<C: View>: View {
 
 
 #Preview {
-	WrappedScrollView(.vertical, action: .constant(.offset(2000))) {
+	WrappedScrollView(action: .constant(.offset(2000))) {
 		VStack(spacing: 0) {
 			ForEach(0...5, id: \.self) { i in
 				LazyCell {
@@ -205,16 +195,13 @@ struct LazyCell<C: View>: View {
 				.frame(height: 600)
 				.background(.quaternary)
 				.border(.quaternary)
+				.clipped()
 			}
 		}
-		.ignoresSafeArea()
-	}
-	.onRefresh {
-		try? await Task.sleep(for: .seconds(2))
-		print("Refresh")
 	}
 	.onScroll { offset in
 //		print("Offset", offset)
 	}
+	.contentIgnoresSafeArea()
 	.ignoresSafeArea()
 }
