@@ -8,9 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		361431ED2BB6891800FA71B4 /* SwiftUIComponentsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EC2BB6891800FA71B4 /* SwiftUIComponentsApp.swift */; };
-		361431EF2BB6891800FA71B4 /* PagingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EE2BB6891800FA71B4 /* PagingScrollView.swift */; };
+		361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EE2BB6891800FA71B4 /* WrappedScrollView.swift */; };
 		361431F12BB6891A00FA71B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F02BB6891900FA71B4 /* Assets.xcassets */; };
 		361431F42BB6891A00FA71B4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */; };
+		361619F22DBAB6F400EFD8AC /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361619F12DBAB6F000EFD8AC /* Database.swift */; };
 		361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361FB8432D74D0820005ADAE /* InfiniteList.swift */; };
 		363600EC2C81027200DF57DB /* StripesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363600EB2C81027200DF57DB /* StripesView.swift */; };
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
@@ -21,9 +22,10 @@
 /* Begin PBXFileReference section */
 		361431E92BB6891800FA71B4 /* SwiftUIComponents.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUIComponents.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		361431EC2BB6891800FA71B4 /* SwiftUIComponentsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIComponentsApp.swift; sourceTree = "<group>"; };
-		361431EE2BB6891800FA71B4 /* PagingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingScrollView.swift; sourceTree = "<group>"; };
+		361431EE2BB6891800FA71B4 /* WrappedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrappedScrollView.swift; sourceTree = "<group>"; };
 		361431F02BB6891900FA71B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		361619F12DBAB6F000EFD8AC /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		361FB8432D74D0820005ADAE /* InfiniteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteList.swift; sourceTree = "<group>"; };
 		363600EB2C81027200DF57DB /* StripesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripesView.swift; sourceTree = "<group>"; };
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
@@ -61,10 +63,11 @@
 		361431EB2BB6891800FA71B4 /* SwiftUIComponents */ = {
 			isa = PBXGroup;
 			children = (
+				361619F12DBAB6F000EFD8AC /* Database.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
 				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
 				363600EB2C81027200DF57DB /* StripesView.swift */,
-				361431EE2BB6891800FA71B4 /* PagingScrollView.swift */,
+				361431EE2BB6891800FA71B4 /* WrappedScrollView.swift */,
 				36F2A3712D8034C8007BACCF /* Drawer.swift */,
 				36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */,
 				361431EC2BB6891800FA71B4 /* SwiftUIComponentsApp.swift */,
@@ -110,7 +113,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1530;
-				LastUpgradeCheck = 1530;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					361431E82BB6891800FA71B4 = {
 						CreatedOnToolsVersion = 15.3;
@@ -154,10 +157,11 @@
 			files = (
 				36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */,
 				363600EC2C81027200DF57DB /* StripesView.swift in Sources */,
-				361431EF2BB6891800FA71B4 /* PagingScrollView.swift in Sources */,
+				361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */,
 				36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */,
 				36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUIComponentsApp.swift in Sources */,
+				361619F22DBAB6F400EFD8AC /* Database.swift in Sources */,
 				361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -200,6 +204,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -265,6 +270,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -296,7 +302,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftUIComponents/Preview Content\"";
-				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -304,7 +309,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -325,7 +330,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftUIComponents/Preview Content\"";
-				DEVELOPMENT_TEAM = 639KEQWW6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -333,7 +337,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
