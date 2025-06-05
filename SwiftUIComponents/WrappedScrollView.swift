@@ -52,6 +52,7 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 		let scrollView = HostedScrollView(host: host, ignoreSafeArea: ignoreSafeArea)
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.showsHorizontalScrollIndicator = false
+		scrollView.contentInsetAdjustmentBehavior = ignoreSafeArea ? .never : .automatic
 		scrollView.delegate = context.coordinator
 
 		host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -77,11 +78,10 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 				break
 
 			case .offset(let offset, let animated):
-				Task { @MainActor in
-					scrollView.setContentOffset(CGPoint(x: axis == .horizontal ? offset : 0, y: axis == .vertical ? offset : 0), animated: animated)
-					Task {
-						action = .idle
-					}
+				scrollView.setContentOffset(CGPoint(x: axis == .horizontal ? offset : 0, y: axis == .vertical ? offset : 0), animated: animated)
+				Task {
+					onScrollAction?(offset)
+					action = .idle
 				}
 		}
 	}
@@ -103,8 +103,8 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 			let size = parent.axis == .horizontal ? scrollView.bounds.width : scrollView.bounds.height
 			if size > 0, scrollView.isTracking || scrollView.isDragging || scrollView.isDecelerating {
 				// Triggered only if interactive
+				let offset = parent.axis == .horizontal ? scrollView.contentOffset.x + scrollView.safeAreaInsets.left : scrollView.contentOffset.y + scrollView.safeAreaInsets.top
 				Task {
-					let offset = parent.axis == .horizontal ? scrollView.contentOffset.x : scrollView.contentOffset.y
 					parent.onScrollAction?(offset)
 				}
 			}
@@ -122,12 +122,12 @@ struct WrappedScrollView<Content: View>: UIViewRepresentable {
 			super.init(frame: .zero)
 		}
 
-		override var safeAreaInsets: UIEdgeInsets {
-			ignoreSafeArea ? .zero : super.safeAreaInsets
-		}
-
 		required init?(coder: NSCoder) {
 			preconditionFailure()
+		}
+
+		override var safeAreaInsets: UIEdgeInsets {
+			ignoreSafeArea ? .zero : super.safeAreaInsets
 		}
 
 		fileprivate func updateView(content: () -> Content) {
@@ -148,10 +148,10 @@ struct LazyCell<C: View>: View {
 	@State private var isVisible: Bool = false
 
 
-	init(content: @escaping () -> C) {
+	init(@ViewBuilder content: @escaping () -> C) {
 		let screen = UIScreen.main.bounds
 		hotFrame = screen
-			.insetBy(dx: -screen.width / 2, dy: -screen.height / 2)
+			.insetBy(dx: -screen.width, dy: -screen.height)
 		self.content = content
 	}
 
