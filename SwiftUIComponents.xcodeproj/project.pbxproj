@@ -15,8 +15,8 @@
 		361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361FB8432D74D0820005ADAE /* InfiniteList.swift */; };
 		363600EC2C81027200DF57DB /* StripesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363600EB2C81027200DF57DB /* StripesView.swift */; };
 		36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F922DF188F90024F146 /* InfiniteListTest.swift */; };
-		36629F952DF18BCF0024F146 /* WrappedZoomTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F942DF18BCF0024F146 /* WrappedZoomTransition.swift */; };
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
+		368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */; };
 		36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F2A3712D8034C8007BACCF /* Drawer.swift */; };
 		36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */; };
 /* End PBXBuildFile section */
@@ -31,8 +31,8 @@
 		361FB8432D74D0820005ADAE /* InfiniteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteList.swift; sourceTree = "<group>"; };
 		363600EB2C81027200DF57DB /* StripesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripesView.swift; sourceTree = "<group>"; };
 		36629F922DF188F90024F146 /* InfiniteListTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteListTest.swift; sourceTree = "<group>"; };
-		36629F942DF18BCF0024F146 /* WrappedZoomTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrappedZoomTransition.swift; sourceTree = "<group>"; };
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
+		368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothGradient.swift; sourceTree = "<group>"; };
 		36F2A3712D8034C8007BACCF /* Drawer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawer.swift; sourceTree = "<group>"; };
 		36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -67,8 +67,8 @@
 		361431EB2BB6891800FA71B4 /* SwiftUIComponents */ = {
 			isa = PBXGroup;
 			children = (
-				36629F912DF188B50024F146 /* Zoom */,
 				361619F12DBAB6F000EFD8AC /* Database.swift */,
+				368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
 				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
 				363600EB2C81027200DF57DB /* StripesView.swift */,
@@ -89,14 +89,6 @@
 				361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		36629F912DF188B50024F146 /* Zoom */ = {
-			isa = PBXGroup;
-			children = (
-				36629F942DF18BCF0024F146 /* WrappedZoomTransition.swift */,
-			);
-			path = Zoom;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -174,9 +166,9 @@
 				361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */,
 				36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */,
 				36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */,
-				36629F952DF18BCF0024F146 /* WrappedZoomTransition.swift in Sources */,
 				36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUIComponentsApp.swift in Sources */,
+				368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */,
 				361619F22DBAB6F400EFD8AC /* Database.swift in Sources */,
 				361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */,
 			);
