@@ -9,87 +9,48 @@ import SwiftUI
 
 private let SliderWidth = 6.0
 private let InflatedSliderWidth = 12.0
-private let PlayerProgressHeight = SliderWidth + 18
 
 
-struct PlayerProgressView: View {
+private struct PlayerProgressView: UIViewRepresentable {
 
 	let total: TimeInterval
 	let playhead: TimeInterval
 	let playing: Bool
 	let onDrag: (TimeInterval) -> Void
 
-	@State private var dragStartX: Double? // start of the drag gesture
-	private var isDragging: Bool { dragStartX != nil }
 
-	var body: some View {
-		GeometryReader { proxy in
-//			let totalX = proxy.size.width - SliderWidth
-
-			WrappedPlayerProgressView(total: total, playhead: playhead, playing: playing && !isDragging, inflated: isDragging)
-				.frame(height: PlayerProgressHeight)
-//				.highPriorityGesture(
-//					DragGesture(minimumDistance: 0)
-//						.onChanged { v in
-//							if dragStartX == nil {
-//								dragStartX = valueToX(playhead, totalX: totalX)
-//							}
-//							onDrag(xToValue(v.translation.width + dragStartX!, totalX: totalX))
-//						}
-//						.onEnded { v in
-//							dragStartX = nil
-//						},
-//					including: .gesture
-//				)
-		}
-	}
-
-	private func valueToX(_ value: TimeInterval, totalX: Double) -> Double {
-		(value / total).clamped(to: 0...1) * totalX + SliderWidth
-	}
-
-	private func xToValue(_ x: Double, totalX: Double) -> TimeInterval {
-		((x - SliderWidth) / totalX).clamped(to: 0...1) * total
-	}
-}
-
-
-private struct WrappedPlayerProgressView: UIViewRepresentable {
-
-	let total: TimeInterval
-	let playhead: TimeInterval
-	let playing: Bool
-	let inflated: Bool
-
-
-	func makeUIView(context: Context) -> HostedPlayerProgressView {
-		HostedPlayerProgressView(context: context)
+	func makeUIView(context: Context) -> HostedView {
+		HostedView(context: context, onDrag: onDrag)
 	}
 
 
-	func updateUIView(_ view: HostedPlayerProgressView, context: Context) {
-		view.update(total: total, playhead: playhead, playing: playing, inflated: inflated, context: context)
+	func updateUIView(_ view: HostedView, context: Context) {
+		view.update(total: total, playhead: playhead, playing: playing, context: context)
 	}
 
 
-	final class HostedPlayerProgressView: UIView {
+	final class HostedView: UIView {
 
 		private var total: TimeInterval = 0
 		private var playing: Bool = false
-		private var inflated: Bool = false
 		private var context: Context
+		private let onDrag: (TimeInterval) -> Void
 
 		override class var layerClass: AnyClass { CAShapeLayer.self }
 		private var barLayer: CAShapeLayer { layer as! CAShapeLayer }
 		private let progressLayer = CAShapeLayer()
 
+		var dragStartX: Double? // start of the drag gesture
+		private var inflated: Bool { dragStartX != nil }
 		private var sliderWidth: Double { inflated ? InflatedSliderWidth : SliderWidth }
 
 
-		init(context: Context) {
+		init(context: Context, onDrag: @escaping (TimeInterval) -> Void) {
 			self.context = context
+			self.onDrag = onDrag
 			super.init(frame: .zero)
 			barLayer.addSublayer(progressLayer)
+			addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(didDrag)))
 		}
 
 
@@ -101,13 +62,38 @@ private struct WrappedPlayerProgressView: UIViewRepresentable {
 		}
 
 
-		fileprivate func update(total: TimeInterval, playhead: TimeInterval, playing: Bool, inflated: Bool, context: Context) {
+		fileprivate func update(total: TimeInterval, playhead: TimeInterval, playing: Bool, context: Context) {
 			self.total = total
 			progressLayer.strokeEnd = playhead / total
 			self.playing = playing
-			self.inflated = inflated
 			self.context = context
 			updatePath()
+		}
+
+
+		@objc private func didDrag(_ sender: UIPanGestureRecognizer) {
+			switch sender.state {
+				case .began:
+					let value = (progressLayer.presentation()?.strokeEnd ?? progressLayer.strokeEnd) * total
+					dragStartX = bounds.width * value / total
+					updatePath()
+
+				case .changed:
+					if let dragStartX {
+						let x = sender.translation(in: self).x + dragStartX
+						let progress = (x / bounds.width).clamped(to: 0...1)
+						progressLayer.strokeEnd = progress
+						progressLayer.removeAllAnimations()
+						onDrag(progress * total)
+					}
+
+				case .ended, .cancelled:
+					dragStartX = nil
+					updatePath()
+
+				default:
+					break
+			}
 		}
 
 
@@ -170,23 +156,22 @@ extension Comparable {
 
 #Preview {
 	@Previewable @State var playhead = 10.0
-	@Previewable @State var playing = false
+	@Previewable @State var playing = true
 	VStack {
 		PlayerProgressView(total: 30, playhead: playhead, playing: playing) { newValue in
-			playhead = newValue
 		}
-		Spacer()
+		.frame(height: 32)
 	}
 	.padding()
 	.task {
-//		try? await Task.sleep(for: .seconds(3))
-//		playhead = 5
-//		playing = true
-//		try? await Task.sleep(for: .seconds(3))
-//		playhead = 15
-//		playing = false
-//		try? await Task.sleep(for: .seconds(2))
-//		playhead = 5
-//		playing = true
+		try? await Task.sleep(for: .seconds(3))
+		playhead = 5
+		playing = true
+		try? await Task.sleep(for: .seconds(3))
+		playhead = 15
+		playing = false
+		try? await Task.sleep(for: .seconds(2))
+		playhead = 27
+		playing = true
 	}
 }
