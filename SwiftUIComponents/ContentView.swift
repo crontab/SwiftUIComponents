@@ -11,7 +11,7 @@ import SwiftUI
 struct ContentView: View {
 
 	var body: some View {
-//		PlayerProgressView(total: 30, value: 10)
+//		PlayerProgressView(total: 30, playhead: 10)
 	}
 }
 
