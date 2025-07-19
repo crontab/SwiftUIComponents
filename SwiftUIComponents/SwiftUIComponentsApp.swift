@@ -12,7 +12,7 @@ struct SwiftUIComponentsApp: App {
 
 	var body: some Scene {
 		WindowGroup {
-
+			ContentView()
 		}
 	}
 }

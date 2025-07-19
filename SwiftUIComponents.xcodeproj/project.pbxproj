@@ -13,6 +13,8 @@
 		361431F42BB6891A00FA71B4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */; };
 		361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361FB8432D74D0820005ADAE /* InfiniteList.swift */; };
 		363600EC2C81027200DF57DB /* StripesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363600EB2C81027200DF57DB /* StripesView.swift */; };
+		36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */; };
+		36563DF42E2BE3C50075535C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DF32E2BE3C50075535C /* ContentView.swift */; };
 		36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F922DF188F90024F146 /* InfiniteListTest.swift */; };
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
 		368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */; };
@@ -28,6 +30,8 @@
 		361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		361FB8432D74D0820005ADAE /* InfiniteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteList.swift; sourceTree = "<group>"; };
 		363600EB2C81027200DF57DB /* StripesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripesView.swift; sourceTree = "<group>"; };
+		36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProgressView.swift; sourceTree = "<group>"; };
+		36563DF32E2BE3C50075535C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		36629F922DF188F90024F146 /* InfiniteListTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteListTest.swift; sourceTree = "<group>"; };
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
 		368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothGradient.swift; sourceTree = "<group>"; };
@@ -65,6 +69,7 @@
 		361431EB2BB6891800FA71B4 /* SwiftUIComponents */ = {
 			isa = PBXGroup;
 			children = (
+				36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */,
 				368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
 				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
@@ -73,6 +78,7 @@
 				36F2A3712D8034C8007BACCF /* Drawer.swift */,
 				36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */,
 				36629F922DF188F90024F146 /* InfiniteListTest.swift */,
+				36563DF32E2BE3C50075535C /* ContentView.swift */,
 				361431EC2BB6891800FA71B4 /* SwiftUIComponentsApp.swift */,
 				361431F02BB6891900FA71B4 /* Assets.xcassets */,
 				361431F22BB6891A00FA71B4 /* Preview Content */,
@@ -159,9 +165,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */,
+				36563DF42E2BE3C50075535C /* ContentView.swift in Sources */,
 				363600EC2C81027200DF57DB /* StripesView.swift in Sources */,
 				361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */,
 				36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */,
+				36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */,
 				36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */,
 				36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUIComponentsApp.swift in Sources */,
