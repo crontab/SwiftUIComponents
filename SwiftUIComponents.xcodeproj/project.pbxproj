@@ -11,7 +11,6 @@
 		361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361431EE2BB6891800FA71B4 /* WrappedScrollView.swift */; };
 		361431F12BB6891A00FA71B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F02BB6891900FA71B4 /* Assets.xcassets */; };
 		361431F42BB6891A00FA71B4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */; };
-		361619F22DBAB6F400EFD8AC /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361619F12DBAB6F000EFD8AC /* Database.swift */; };
 		361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361FB8432D74D0820005ADAE /* InfiniteList.swift */; };
 		363600EC2C81027200DF57DB /* StripesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363600EB2C81027200DF57DB /* StripesView.swift */; };
 		36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F922DF188F90024F146 /* InfiniteListTest.swift */; };
@@ -27,7 +26,6 @@
 		361431EE2BB6891800FA71B4 /* WrappedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrappedScrollView.swift; sourceTree = "<group>"; };
 		361431F02BB6891900FA71B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		361619F12DBAB6F000EFD8AC /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		361FB8432D74D0820005ADAE /* InfiniteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteList.swift; sourceTree = "<group>"; };
 		363600EB2C81027200DF57DB /* StripesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripesView.swift; sourceTree = "<group>"; };
 		36629F922DF188F90024F146 /* InfiniteListTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteListTest.swift; sourceTree = "<group>"; };
@@ -67,7 +65,6 @@
 		361431EB2BB6891800FA71B4 /* SwiftUIComponents */ = {
 			isa = PBXGroup;
 			children = (
-				361619F12DBAB6F000EFD8AC /* Database.swift */,
 				368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
 				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
@@ -169,7 +166,6 @@
 				36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUIComponentsApp.swift in Sources */,
 				368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */,
-				361619F22DBAB6F400EFD8AC /* Database.swift in Sources */,
 				361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
