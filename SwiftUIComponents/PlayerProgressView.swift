@@ -20,12 +20,12 @@ private struct PlayerProgressView: UIViewRepresentable {
 
 
 	func makeUIView(context: Context) -> HostedView {
-		HostedView(context: context, onDrag: onDrag)
+		HostedView(context: context)
 	}
 
 
 	func updateUIView(_ view: HostedView, context: Context) {
-		view.update(total: total, playhead: playhead, playing: playing, context: context)
+		view.update(total: total, playhead: playhead, playing: playing, onDrag: onDrag, context: context)
 	}
 
 
@@ -34,22 +34,21 @@ private struct PlayerProgressView: UIViewRepresentable {
 		private var total: TimeInterval = 0
 		private var playing: Bool = false
 		private var context: Context
-		private let onDrag: (TimeInterval) -> Void
+		private var onDrag: ((TimeInterval) -> Void)?
 
-		override class var layerClass: AnyClass { CAShapeLayer.self }
-		private var barLayer: CAShapeLayer { layer as! CAShapeLayer }
+		private let barLayer = CAShapeLayer()
 		private let progressLayer = CAShapeLayer()
 
-		var dragStartX: Double? // start of the drag gesture
-		private var inflated: Bool { dragStartX != nil }
-		private var sliderWidth: Double { inflated ? InflatedSliderWidth : SliderWidth }
+		private var dragStartX: Double? // start of the drag gesture
+		private var isDragging: Bool { dragStartX != nil }
+		private var sliderWidth: Double { isDragging ? InflatedSliderWidth : SliderWidth }
 
 
-		init(context: Context, onDrag: @escaping (TimeInterval) -> Void) {
+		init(context: Context) {
 			self.context = context
-			self.onDrag = onDrag
 			super.init(frame: .zero)
-			barLayer.addSublayer(progressLayer)
+			layer.addSublayer(barLayer)
+			layer.addSublayer(progressLayer)
 			addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(didDrag)))
 		}
 
@@ -62,10 +61,11 @@ private struct PlayerProgressView: UIViewRepresentable {
 		}
 
 
-		fileprivate func update(total: TimeInterval, playhead: TimeInterval, playing: Bool, context: Context) {
+		fileprivate func update(total: TimeInterval, playhead: TimeInterval, playing: Bool, onDrag: @escaping (TimeInterval) -> Void, context: Context) {
 			self.total = total
 			progressLayer.strokeEnd = playhead / total
 			self.playing = playing
+			self.onDrag = onDrag
 			self.context = context
 			updatePath()
 		}
@@ -74,8 +74,10 @@ private struct PlayerProgressView: UIViewRepresentable {
 		@objc private func didDrag(_ sender: UIPanGestureRecognizer) {
 			switch sender.state {
 				case .began:
-					let value = (progressLayer.presentation()?.strokeEnd ?? progressLayer.strokeEnd) * total
-					dragStartX = bounds.width * value / total
+					let progress = progressLayer.presentation()?.strokeEnd ?? progressLayer.strokeEnd
+					dragStartX = bounds.width * progress
+					progressLayer.strokeEnd = progress
+					progressLayer.removeAllAnimations()
 					updatePath()
 
 				case .changed:
@@ -84,7 +86,7 @@ private struct PlayerProgressView: UIViewRepresentable {
 						let progress = (x / bounds.width).clamped(to: 0...1)
 						progressLayer.strokeEnd = progress
 						progressLayer.removeAllAnimations()
-						onDrag(progress * total)
+						onDrag?(progress * total)
 					}
 
 				case .ended, .cancelled:
@@ -106,8 +108,8 @@ private struct PlayerProgressView: UIViewRepresentable {
 			if playing {
 				animateStrokeEnd()
 			}
-			else {
-				progressLayer.removeAnimation(forKey: "strokeEnd")
+			else if !isDragging {
+				progressLayer.removeAllAnimations()
 			}
 		}
 
@@ -136,7 +138,6 @@ private struct PlayerProgressView: UIViewRepresentable {
 		private func setupLayer(_ layer: CAShapeLayer, color: Color) {
 			layer.strokeColor = color.resolve(in: context.environment).cgColor
 			layer.lineCap = .round
-			layer.lineWidth = sliderWidth
 			layer.path = buildPath(width: bounds.width)
 		}
 
@@ -164,14 +165,14 @@ extension Comparable {
 	}
 	.padding()
 	.task {
-		try? await Task.sleep(for: .seconds(3))
-		playhead = 5
-		playing = true
+//		try? await Task.sleep(for: .seconds(3))
+//		playhead = 5
+//		playing = true
 		try? await Task.sleep(for: .seconds(3))
 		playhead = 15
 		playing = false
-		try? await Task.sleep(for: .seconds(2))
-		playhead = 27
-		playing = true
+//		try? await Task.sleep(for: .seconds(2))
+//		playhead = 27
+//		playing = true
 	}
 }
