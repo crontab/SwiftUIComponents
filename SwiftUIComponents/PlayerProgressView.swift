@@ -11,7 +11,7 @@ private let SliderWidth = 6.0
 private let InflatedSliderWidth = 12.0
 
 
-private struct PlayerProgressView: UIViewRepresentable {
+struct PlayerProgressView: UIViewRepresentable {
 
 	let total: TimeInterval
 	let playhead: TimeInterval
@@ -146,12 +146,6 @@ private struct PlayerProgressView: UIViewRepresentable {
 			preconditionFailure()
 		}
 	}
-}
-
-
-extension Comparable {
-	@inlinable
-	func clamped(to limits: ClosedRange<Self>) -> Self { min(max(self, limits.lowerBound), limits.upperBound) }
 }
 
 

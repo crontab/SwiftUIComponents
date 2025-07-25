@@ -15,6 +15,7 @@
 		363600EC2C81027200DF57DB /* StripesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363600EB2C81027200DF57DB /* StripesView.swift */; };
 		36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */; };
 		36563DF42E2BE3C50075535C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DF32E2BE3C50075535C /* ContentView.swift */; };
+		36563DF72E2C53020075535C /* FoundationEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DF62E2C52FE0075535C /* FoundationEx.swift */; };
 		36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F922DF188F90024F146 /* InfiniteListTest.swift */; };
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
 		368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */; };
@@ -32,6 +33,7 @@
 		363600EB2C81027200DF57DB /* StripesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripesView.swift; sourceTree = "<group>"; };
 		36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProgressView.swift; sourceTree = "<group>"; };
 		36563DF32E2BE3C50075535C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		36563DF62E2C52FE0075535C /* FoundationEx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationEx.swift; sourceTree = "<group>"; };
 		36629F922DF188F90024F146 /* InfiniteListTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteListTest.swift; sourceTree = "<group>"; };
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
 		368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothGradient.swift; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 		361431EB2BB6891800FA71B4 /* SwiftUIComponents */ = {
 			isa = PBXGroup;
 			children = (
+				36563DF62E2C52FE0075535C /* FoundationEx.swift */,
 				36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */,
 				368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
@@ -169,6 +172,7 @@
 				363600EC2C81027200DF57DB /* StripesView.swift in Sources */,
 				361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */,
 				36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */,
+				36563DF72E2C53020075535C /* FoundationEx.swift in Sources */,
 				36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */,
 				36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */,
 				36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */,
