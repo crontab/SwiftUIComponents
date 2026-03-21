@@ -17,11 +17,12 @@ struct ChatListTest: View {
 	private struct Item: ChatListItem {
 		let index: Int
 		var uiID: String { String(index) }
+		var uiHeight: CGFloat { cellSize }
 		static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 	}
 
 
-	@State private var items: [Item] = Item.from(range: 0..<page)
+	@State private var items: [Item] = []
 	@State private var action: ChatListAction? = .bottom(animated: false)
 
 
@@ -44,17 +45,17 @@ struct ChatListTest: View {
 		} onLoadMore: { edge in
 			switch edge {
 				case .top:
-					let first = items.first!
-					guard first.index > -100 else { return .eod }
+					let first = items.first?.index ?? 0
+					guard first > -100 else { return .eod }
 					try? await Task.sleep(for: .seconds(1))
-					items.insert(contentsOf: Item.from(range: (first.index - page)..<first.index), at: 0)
+					items.insert(contentsOf: Item.from(range: (first - page)..<first), at: 0)
 					print(Date.now, "added more above")
 					return .hasMore
 				case .bottom:
-					let last = items.last!
-					guard last.index < 100 else { return .eod }
+					let last = items.last?.index ?? 0
+					guard last < 100 else { return .eod }
 					try? await Task.sleep(for: .seconds(1))
-					items.append(contentsOf: Item.from(range: (last.index + 1)..<(last.index + page)))
+					items.append(contentsOf: Item.from(range: (last + 1)..<(last + 1 + page)))
 					print(Date.now, "added more below")
 					return .hasMore
 			}
@@ -86,6 +87,10 @@ struct ChatListTest: View {
 					Image(systemName: "chevron.up")
 				}
 			}
+		}
+
+		.onAppear {
+			items = Item.from(range: 0..<page)
 		}
 	}
 }

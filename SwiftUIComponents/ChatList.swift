@@ -10,6 +10,7 @@ import SwiftUI
 protocol ChatListItem {
 	typealias ID = String
 	var uiID: ID { get }
+	var uiHeight: CGFloat { get }
 }
 
 
@@ -35,8 +36,9 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 
 	func makeUIView(context: Context) -> UICollectionView {
-		let config = UICollectionLayoutListConfiguration(appearance: .plain)
-		let layout = UICollectionViewCompositionalLayout.list(using: config)
+		let layout = UICollectionViewFlowLayout()
+		layout.minimumLineSpacing = 0
+		layout.minimumInteritemSpacing = 0
 		let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
 		collectionView.backgroundColor = .clear
 		collectionView.alwaysBounceVertical = true
@@ -71,8 +73,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
 		if newIDs != oldIDs {
-			let topChanged = oldIDs.first != nil && newIDs.first != nil && oldIDs.first != newIDs.first
-			let oldContentHeight = collectionView.contentSize.height
 			let oldOffset = collectionView.contentOffset.y
 
 			var itemMap: [Item.ID: Item] = [:]
@@ -84,18 +84,15 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			snapshot.appendItems(newIDs, toSection: 0)
 			coordinator.dataSource.apply(snapshot, animatingDifferences: false)
 
-			if topChanged {
-				collectionView.layoutIfNeeded()
-				let delta = collectionView.contentSize.height - oldContentHeight
-				if delta != 0 {
-					collectionView.contentOffset.y = oldOffset + delta
-				}
+			if let firstOldID = oldIDs.first, let splitIndex = newIDs.firstIndex(of: firstOldID), splitIndex > 0 {
+				let delta = items[..<splitIndex].reduce(0.0) { $0 + $1.uiHeight }
+				collectionView.contentOffset.y = oldOffset + delta
 			}
 
-			collectionView.contentInset = edgeInsets.uiEdgeInsets
-			collectionView.layoutIfNeeded()
 			coordinator.edgeTest()
 		}
+
+		collectionView.contentInset = edgeInsets.uiEdgeInsets
 
 		if let action {
 			Task {
@@ -115,7 +112,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 					case .scrollTo(let id, let animated):
 						if let indexPath = coordinator.dataSource.indexPath(for: id) {
-							collectionView.scrollToItem(at: indexPath, at: .centeredVertically, animated: animated)
+							collectionView.scrollToItem(at: indexPath, at: .top, animated: animated)
 						}
 
 					case .resetEdges:
@@ -133,7 +130,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	}
 
 
-	final class Coordinator: NSObject, UICollectionViewDelegate {
+	final class Coordinator: NSObject, UICollectionViewDelegateFlowLayout {
 		var collectionView: UICollectionView!
 		var dataSource: UICollectionViewDiffableDataSource<Int, Item.ID>!
 		var itemMap: [Item.ID: Item] = [:]
@@ -149,6 +146,12 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 		func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
 			edgeTest()
+		}
+
+		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+			let id = dataSource.itemIdentifier(for: indexPath)
+			let h = id.flatMap { itemMap[$0]?.uiHeight } ?? 0
+			return CGSize(width: collectionView.bounds.width, height: h)
 		}
 
 		func edgeTest() {
@@ -191,14 +194,15 @@ private let cellSize = 100.0
 private struct Item: ChatListItem {
 	let index: Int
 	var uiID: String { String(index) }
+	var uiHeight: CGFloat { cellSize }
 	static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 }
 
 #Preview {
-	@Previewable @State var items = Item.from(range: 0..<page)
-	@Previewable @State var action: ChatListAction? = nil
+	@Previewable @State var items: [Item] = []
+	@Previewable @State var action: ChatListAction? = .bottom(animated: false)
 
-	ChatList(items: items, action: $action) { item in
+	ChatList(items: items, action: $action, edgeInsets: EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0)) { item in
 		HStack {
 			Text("Row \(item.index)")
 		}
@@ -216,17 +220,17 @@ private struct Item: ChatListItem {
 	} onLoadMore: { edge in
 		switch edge {
 			case .top:
-				let first = items.first!
-				guard first.index > -100 else { return .eod }
+				let first = items.first?.index ?? 0
+				guard first > -100 else { return .eod }
 				try? await Task.sleep(for: .seconds(1))
-				items.insert(contentsOf: Item.from(range: (first.index - page)..<first.index), at: 0)
+				items.insert(contentsOf: Item.from(range: (first - page)..<first), at: 0)
 				print(Date.now, "added more above")
 				return .hasMore
 			case .bottom:
-				let last = items.last!
-				guard last.index < 100 else { return .eod }
+				let last = items.last?.index ?? -1
+				guard last < 100 else { return .eod }
 				try? await Task.sleep(for: .seconds(1))
-				items.append(contentsOf: Item.from(range: (last.index + 1)..<(last.index + 1 + page)))
+				items.append(contentsOf: Item.from(range: (last + 1)..<(last + 1 + page)))
 				print(Date.now, "added more below")
 				return .hasMore
 		}
@@ -258,5 +262,9 @@ private struct Item: ChatListItem {
 				Image(systemName: "chevron.up")
 			}
 		}
+	}
+
+	.onAppear {
+		items = Item.from(range: 0..<page)
 	}
 }
