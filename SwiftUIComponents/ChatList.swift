@@ -14,6 +14,7 @@ enum ChatListAction<ID: Hashable> {
 	case top(animated: Bool)
 	case bottom(animated: Bool)
 	case scrollTo(id: ID, animated: Bool)
+	case resetEdges
 }
 
 
@@ -88,6 +89,9 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 		collectionView.contentInset = edgeInsets.uiEdgeInsets
 
+		collectionView.layoutIfNeeded()
+		coordinator.edgeTest()
+
 		if let action {
 			Task {
 				switch action {
@@ -103,7 +107,12 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 						if let indexPath = coordinator.dataSource.indexPath(for: id) {
 							collectionView.scrollToItem(at: indexPath, at: .centeredVertically, animated: animated)
 						}
+
+					case .resetEdges:
+						coordinator.edgeStatuses = [:]
+						coordinator.edgeTest()
 				}
+
 				self.action = nil
 			}
 		}
@@ -133,9 +142,8 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			edgeTest()
 		}
 
-		private func edgeTest(recurse: Int = 0) {
+		func edgeTest() {
 			guard !edgeLock, let cv = collectionView else { return }
-			guard recurse < 4 else { return }
 			let vicinity = max(cv.bounds.height / 2, 200)
 			let topDist = cv.contentOffset.y + cv.adjustedContentInset.top
 			let bottomDist = cv.contentSize.height - cv.contentOffset.y - cv.bounds.height + cv.adjustedContentInset.bottom
@@ -145,7 +153,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 				Task {
 					edgeStatuses[.top] = await onLoadMore(.top)
 					edgeLock = false
-					edgeTest(recurse: recurse + 1)
 				}
 			}
 			else if bottomDist <= vicinity, edgeStatuses[.bottom] != .eod {
@@ -153,7 +160,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 				Task {
 					edgeStatuses[.bottom] = await onLoadMore(.bottom)
 					edgeLock = false
-					edgeTest(recurse: recurse + 1)
 				}
 			}
 		}
