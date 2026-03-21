@@ -70,45 +70,48 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let newIDs = items.map(\.uiID)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
-		guard newIDs != oldIDs else { return }
+		if newIDs != oldIDs {
+			let topChanged = oldIDs.first != nil && newIDs.first != nil && oldIDs.first != newIDs.first
+			let oldContentHeight = collectionView.contentSize.height
+			let oldOffset = collectionView.contentOffset.y
 
-		let topChanged = oldIDs.first != nil && newIDs.first != nil && oldIDs.first != newIDs.first
+			var itemMap: [Item.ID: Item] = [:]
+			for item in items { itemMap[item.uiID] = item }
+			coordinator.itemMap = itemMap
 
-		let oldContentHeight = collectionView.contentSize.height
-		let oldOffset = collectionView.contentOffset.y
+			var snapshot = NSDiffableDataSourceSnapshot<Int, Item.ID>()
+			snapshot.appendSections([0])
+			snapshot.appendItems(newIDs, toSection: 0)
+			coordinator.dataSource.apply(snapshot, animatingDifferences: false)
 
-		var itemMap: [Item.ID: Item] = [:]
-		for item in items { itemMap[item.uiID] = item }
-		coordinator.itemMap = itemMap
-
-		var snapshot = NSDiffableDataSourceSnapshot<Int, Item.ID>()
-		snapshot.appendSections([0])
-		snapshot.appendItems(newIDs, toSection: 0)
-		coordinator.dataSource.apply(snapshot, animatingDifferences: false)
-
-		if topChanged {
-			collectionView.layoutIfNeeded()
-			let delta = collectionView.contentSize.height - oldContentHeight
-			if delta != 0 {
-				collectionView.contentOffset.y = oldOffset + delta
+			if topChanged {
+				collectionView.layoutIfNeeded()
+				let delta = collectionView.contentSize.height - oldContentHeight
+				if delta != 0 {
+					collectionView.contentOffset.y = oldOffset + delta
+				}
 			}
+
+			collectionView.contentInset = edgeInsets.uiEdgeInsets
+			collectionView.layoutIfNeeded()
+			coordinator.edgeTest()
 		}
-
-		collectionView.contentInset = edgeInsets.uiEdgeInsets
-
-		collectionView.layoutIfNeeded()
-		coordinator.edgeTest()
 
 		if let action {
 			Task {
 				switch action {
 
 					case .top(let animated):
-						collectionView.setContentOffset(.init(x: 0, y: -collectionView.adjustedContentInset.top), animated: animated)
+						let count = coordinator.dataSource.snapshot().numberOfItems
+						if count > 0 {
+							collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: animated)
+						}
 
 					case .bottom(let animated):
-						let y = max(collectionView.contentSize.height - collectionView.bounds.height + collectionView.adjustedContentInset.bottom, -collectionView.adjustedContentInset.top)
-						collectionView.setContentOffset(.init(x: 0, y: y), animated: animated)
+						let count = coordinator.dataSource.snapshot().numberOfItems
+						if count > 0 {
+							collectionView.scrollToItem(at: IndexPath(item: count - 1, section: 0), at: .bottom, animated: animated)
+						}
 
 					case .scrollTo(let id, let animated):
 						if let indexPath = coordinator.dataSource.indexPath(for: id) {
@@ -119,7 +122,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 						coordinator.edgeStatuses = [:]
 						coordinator.edgeTest()
 				}
-
 				self.action = nil
 			}
 		}
@@ -221,8 +223,40 @@ private struct Item: ChatListItem {
 				print(Date.now, "added more above")
 				return .hasMore
 			case .bottom:
-				return .eod
+				let last = items.last!
+				guard last.index < 100 else { return .eod }
+				try? await Task.sleep(for: .seconds(1))
+				items.append(contentsOf: Item.from(range: (last.index + 1)..<(last.index + 1 + page)))
+				print(Date.now, "added more below")
+				return .hasMore
 		}
 	}
 	.frame(maxWidth: .infinity, maxHeight: .infinity)
+	.ignoresSafeArea()
+
+	.toolbar {
+		ToolbarItem(placement: .bottomBar) {
+			Button {
+				action = .bottom(animated: true)
+			} label: {
+				Image(systemName: "chevron.down")
+			}
+		}
+
+		ToolbarItem(placement: .bottomBar) {
+			Button {
+				action = .scrollTo(id: "0", animated: true)
+			} label: {
+				Image(systemName: "minus")
+			}
+		}
+
+		ToolbarItem(placement: .bottomBar) {
+			Button {
+				action = .top(animated: true)
+			} label: {
+				Image(systemName: "chevron.up")
+			}
+		}
+	}
 }

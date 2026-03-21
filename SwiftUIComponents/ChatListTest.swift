@@ -51,25 +51,40 @@ struct ChatListTest: View {
 					print(Date.now, "added more above")
 					return .hasMore
 				case .bottom:
-					return .eod
+					let last = items.last!
+					guard last.index < 100 else { return .eod }
+					try? await Task.sleep(for: .seconds(1))
+					items.append(contentsOf: Item.from(range: (last.index + 1)..<(last.index + page)))
+					print(Date.now, "added more below")
+					return .hasMore
 			}
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.ignoresSafeArea()
 
-		.overlay(alignment: .bottomTrailing) {
-			Button {
-				action = .bottom(animated: true)
-			} label: {
-				Circle()
-					.fill(.background)
-					.shadow(color: .secondary.opacity(0.2), radius: 3, y: 2)
-					.frame(width: 44)
-					.padding(24)
-					.overlay {
-						Image(systemName: "chevron.down")
-							.offset(y: 2)
-					}
+		.toolbar {
+			ToolbarItem(placement: .bottomBar) {
+				Button {
+					action = .bottom(animated: true)
+				} label: {
+					Image(systemName: "chevron.down")
+				}
+			}
+
+			ToolbarItem(placement: .bottomBar) {
+				Button {
+					action = .scrollTo(id: "0", animated: true)
+				} label: {
+					Image(systemName: "minus")
+				}
+			}
+
+			ToolbarItem(placement: .bottomBar) {
+				Button {
+					action = .top(animated: true)
+				} label: {
+					Image(systemName: "chevron.up")
+				}
 			}
 		}
 	}
