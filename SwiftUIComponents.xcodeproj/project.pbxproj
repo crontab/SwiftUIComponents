@@ -18,6 +18,7 @@
 		36629F932DF188F90024F146 /* ChatListTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F922DF188F90024F146 /* ChatListTest.swift */; };
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
 		368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */; };
+		36A32F772F6F3C3800DCAD62 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A32F762F6F3C3800DCAD62 /* ChatView.swift */; };
 		36B147812F6EA9BF00733E86 /* ChatList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B147802F6EA9BF00733E86 /* ChatList.swift */; };
 		36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F2A3712D8034C8007BACCF /* Drawer.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +36,7 @@
 		36629F922DF188F90024F146 /* ChatListTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListTest.swift; sourceTree = "<group>"; };
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
 		368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothGradient.swift; sourceTree = "<group>"; };
+		36A32F762F6F3C3800DCAD62 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		36B147802F6EA9BF00733E86 /* ChatList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatList.swift; sourceTree = "<group>"; };
 		36F2A3712D8034C8007BACCF /* Drawer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -77,6 +79,7 @@
 				36F2A3712D8034C8007BACCF /* Drawer.swift */,
 				36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */,
 				36B147802F6EA9BF00733E86 /* ChatList.swift */,
+				36A32F762F6F3C3800DCAD62 /* ChatView.swift */,
 				36629F922DF188F90024F146 /* ChatListTest.swift */,
 				36563DF32E2BE3C50075535C /* ContentView.swift */,
 				361431EC2BB6891800FA71B4 /* SwiftUIComponentsApp.swift */,
@@ -168,6 +171,7 @@
 				36563DF42E2BE3C50075535C /* ContentView.swift in Sources */,
 				363600EC2C81027200DF57DB /* StripesView.swift in Sources */,
 				361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */,
+				36A32F772F6F3C3800DCAD62 /* ChatView.swift in Sources */,
 				36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */,
 				36563DF72E2C53020075535C /* FoundationEx.swift in Sources */,
 				36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */,
