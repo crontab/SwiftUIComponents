@@ -10,7 +10,10 @@ import SwiftUI
 enum InfiniteViewAction {
 	case top(animated: Bool)
 	case bottom(animated: Bool)
+	case offset(_ offset: Double, animated: Bool)
 }
+
+enum VEdge { case top, bottom }
 
 
 /// `InfiniteView`: a view that can extend its top and bottom contents without disrupting the interactive scrolling.
@@ -31,11 +34,11 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 	@Binding var action: InfiniteViewAction?
 	var edgeInsets: EdgeInsets = .zero
 	let content: () -> Content
-	let onApproachingEdge: (Edge) async -> Void // currently only `.top` and `.bottom`; triggered within half a screen from the edge
+	let onApproachingEdge: (VEdge) async -> Void // currently only `.top` and `.bottom`; triggered within half a screen from the edge
 
 
 	func makeUIView(context: Context) -> HostedScrollView {
-		return HostedScrollView(content: content, onApproachingEdge: onApproachingEdge)
+		HostedScrollView(content: content, onApproachingEdge: onApproachingEdge)
 	}
 
 
@@ -47,14 +50,23 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 				break
 
 			case .top(let animated):
+				scrollView.scrollToTop(animated: animated)
 				Task {
-					scrollView.scrollToTop(animated: animated)
 					action = nil
 				}
 
 			case .bottom(let animated):
+				scrollView.scrollToBottom(animated: animated)
 				Task {
-					scrollView.scrollToBottom(animated: animated)
+					action = nil
+				}
+
+			case .offset(let offset, let animated):
+				let wh = scrollView.bounds.height - scrollView.safeAreaInsets.top - scrollView.safeAreaInsets.bottom
+				let ch = scrollView.contentSize.height + headroom
+				let offset = max(0, min(offset, ch - wh))
+				scrollView.setContentOffset(.init(x: 0, y: offset - headroom - scrollView.safeAreaInsets.top), animated: animated)
+				Task {
 					action = nil
 				}
 		}
@@ -63,19 +75,19 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 
 	final class HostedScrollView: UIScrollView, UIScrollViewDelegate {
 		private let host: UIHostingController<Content>
-		private let onApproachingEdge: (Edge) async -> Void
+		private let onApproachingEdge: (VEdge) async -> Void
 		private var edgeLock: Bool = false
 
 
-		init(content: () -> Content, onApproachingEdge: @escaping (Edge) async -> Void) {
+		init(content: () -> Content, onApproachingEdge: @escaping (VEdge) async -> Void) {
 			self.host = UIHostingController(rootView: content())
 			self.onApproachingEdge = onApproachingEdge
 			super.init(frame: .zero)
 			delegate = self
 			addSubview(host.view)
 			alwaysBounceVertical = true
+			showsVerticalScrollIndicator = false
 			host.view.backgroundColor = .clear
-			host.view.autoresizingMask = [.flexibleWidth]
 			// updateView() will be called after this
 		}
 
@@ -87,8 +99,8 @@ struct InfiniteView<Content: View>: UIViewRepresentable {
 
 		fileprivate func updateView(headroom: Double, edgeInsets: EdgeInsets, content: () -> Content) {
 			host.rootView = content()
-			frame.size.width = 0 // this is required on the Mac for some reason
 			host.view.sizeToFit()
+			host.view.frame.size.width = bounds.width
 			let newHeight = host.view.bounds.height
 			let blankSpace = max(0, pageHeight - newHeight - edgeInsets.top - edgeInsets.bottom) // ensure small content is at the bottom
 			host.view.frame.origin.y = -headroom
@@ -208,8 +220,6 @@ private let cellSize = 50.0
 						range = (range.lowerBound - page)..<range.upperBound
 					case .bottom:
 						range = range.lowerBound..<(range.upperBound + 5)
-					default:
-						break
 				}
 			}
 			.ignoresSafeArea()
