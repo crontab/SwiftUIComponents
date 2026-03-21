@@ -61,7 +61,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 		let oldFirstID = coordinator.dataSource.snapshot().itemIdentifiers.first
 		let newFirstID = items.first?.id
-		let isPrepend = oldFirstID != nil && newFirstID != nil && oldFirstID != newFirstID
+		let topChanged = oldFirstID != nil && newFirstID != nil && oldFirstID != newFirstID
 
 		let oldContentHeight = collectionView.contentSize.height
 		let oldOffset = collectionView.contentOffset.y
@@ -75,10 +75,10 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		snapshot.appendItems(items.map(\.id), toSection: 0)
 		coordinator.dataSource.apply(snapshot, animatingDifferences: false)
 
-		if isPrepend {
+		if topChanged {
 			collectionView.layoutIfNeeded()
 			let delta = collectionView.contentSize.height - oldContentHeight
-			if delta > 0 {
+			if delta != 0 {
 				collectionView.contentOffset.y = oldOffset + delta
 			}
 		}
@@ -179,7 +179,7 @@ private struct Item: ChatListItem {
 		.frame(height: cellSize)
 		.background {
 			Rectangle()
-				.fill(.white.opacity(Double(item.index + 100) / 100))
+				.fill(.black.opacity(1 - Double(item.index + 100) / 100))
 		}
 		.overlay(alignment: .bottom) {
 			Rectangle()
@@ -200,5 +200,4 @@ private struct Item: ChatListItem {
 		}
 	}
 	.frame(maxWidth: .infinity, maxHeight: .infinity)
-	.background(.primary)
 }
