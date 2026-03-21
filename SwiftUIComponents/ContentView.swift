@@ -12,7 +12,6 @@ struct ContentView: View {
 
 	var body: some View {
 		ChatListTest()
-//		PlayerProgressView(total: 30, playhead: 10)
 	}
 }
 
