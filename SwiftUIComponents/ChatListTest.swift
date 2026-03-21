@@ -16,8 +16,8 @@ struct ChatListTest: View {
 
 	private struct Item: ChatListItem {
 		let index: Int
-		var uiID: String { String(index) }
-		var uiHeight: CGFloat { cellSize }
+		var uiId: String { String(index) }
+		var uiHeight: Double { cellSize }
 		static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 	}
 

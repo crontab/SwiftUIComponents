@@ -9,8 +9,8 @@ import SwiftUI
 
 protocol ChatListItem {
 	typealias ID = String
-	var uiID: ID { get }
-	var uiHeight: CGFloat { get }
+	var uiId: ID { get }
+	var uiHeight: Double { get }
 }
 
 
@@ -31,7 +31,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	let items: [Item]
 	@Binding var action: ChatListAction?
 	var edgeInsets: EdgeInsets = .zero
-	let cellContent: (Item) -> Content
+	@ViewBuilder let cellContent: (Item) -> Content
 	let onLoadMore: (VEdge) async -> EdgeStatus
 	var onItemSeen: ((Item) -> Void)? = nil
 
@@ -71,7 +71,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.onLoadMore = onLoadMore
 		coordinator.onItemSeen = onItemSeen
 
-		let newIDs = items.map(\.uiID)
+		let newIDs = items.map(\.uiId)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
 		if newIDs != oldIDs {
@@ -79,7 +79,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			coordinator.seenIDs.formIntersection(newIDs)
 
 			var itemMap: [Item.ID: Item] = [:]
-			for item in items { itemMap[item.uiID] = item }
+			for item in items { itemMap[item.uiId] = item }
 			coordinator.itemMap = itemMap
 
 			var snapshot = NSDiffableDataSourceSnapshot<Int, Item.ID>()
@@ -212,8 +212,8 @@ private let cellSize = 100.0
 
 private struct Item: ChatListItem {
 	let index: Int
-	var uiID: String { String(index) }
-	var uiHeight: CGFloat { cellSize }
+	var uiId: String { String(index) }
+	var uiHeight: Double { cellSize }
 	static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 }
 
@@ -254,7 +254,7 @@ private struct Item: ChatListItem {
 				return .hasMore
 		}
 	} onItemSeen: { item in
-		print("seen", item.uiID)
+		print("seen", item.uiId)
 	}
 	.frame(maxWidth: .infinity, maxHeight: .infinity)
 	.ignoresSafeArea()
