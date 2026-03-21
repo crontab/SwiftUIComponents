@@ -12,6 +12,7 @@
 		361431F12BB6891A00FA71B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F02BB6891900FA71B4 /* Assets.xcassets */; };
 		361431F42BB6891A00FA71B4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */; };
 		361FB8442D74D0820005ADAE /* InfiniteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361FB8432D74D0820005ADAE /* InfiniteList.swift */; };
+		362EB55B2F6DA7280060A627 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362EB55A2F6DA7280060A627 /* ChatView.swift */; };
 		363600EC2C81027200DF57DB /* StripesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363600EB2C81027200DF57DB /* StripesView.swift */; };
 		36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */; };
 		36563DF42E2BE3C50075535C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36563DF32E2BE3C50075535C /* ContentView.swift */; };
@@ -30,6 +31,7 @@
 		361431F02BB6891900FA71B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		361431F32BB6891A00FA71B4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		361FB8432D74D0820005ADAE /* InfiniteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteList.swift; sourceTree = "<group>"; };
+		362EB55A2F6DA7280060A627 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		363600EB2C81027200DF57DB /* StripesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripesView.swift; sourceTree = "<group>"; };
 		36563DEF2E2BD19A0075535C /* PlayerProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProgressView.swift; sourceTree = "<group>"; };
 		36563DF32E2BE3C50075535C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */,
 				36FA69BC2D71AC2700C96B7F /* InfiniteView.swift */,
 				361FB8432D74D0820005ADAE /* InfiniteList.swift */,
+				362EB55A2F6DA7280060A627 /* ChatView.swift */,
 				363600EB2C81027200DF57DB /* StripesView.swift */,
 				361431EE2BB6891800FA71B4 /* WrappedScrollView.swift */,
 				36F2A3712D8034C8007BACCF /* Drawer.swift */,
@@ -125,7 +128,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1530;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					361431E82BB6891800FA71B4 = {
 						CreatedOnToolsVersion = 15.3;
@@ -173,6 +176,7 @@
 				361431EF2BB6891800FA71B4 /* WrappedScrollView.swift in Sources */,
 				36F2A3722D8034C8007BACCF /* Drawer.swift in Sources */,
 				36563DF72E2C53020075535C /* FoundationEx.swift in Sources */,
+				362EB55B2F6DA7280060A627 /* ChatView.swift in Sources */,
 				36563DF02E2BD19A0075535C /* PlayerProgressView.swift in Sources */,
 				36629F932DF188F90024F146 /* InfiniteListTest.swift in Sources */,
 				36FA69BD2D71AC2700C96B7F /* InfiniteView.swift in Sources */,
@@ -244,6 +248,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -303,6 +308,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
