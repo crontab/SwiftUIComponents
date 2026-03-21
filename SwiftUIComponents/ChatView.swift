@@ -14,9 +14,6 @@ protocol ChatViewItem {
 }
 
 
-enum EdgeStatus { case hasMore, eod }
-enum VEdge { case bottom, top }
-
 private let EdgeVicinity = 500.0
 
 

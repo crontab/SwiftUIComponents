@@ -7,21 +7,28 @@
 import SwiftUI
 
 
-protocol ChatListItem: Identifiable { }
+protocol ChatListItem {
+	typealias ID = String
+	var uiID: ID { get }
+}
 
 
-enum ChatListAction<ID: Hashable> {
+enum ChatListAction {
 	case top(animated: Bool)
 	case bottom(animated: Bool)
-	case scrollTo(id: ID, animated: Bool)
+	case scrollTo(id: ChatListItem.ID, animated: Bool)
 	case resetEdges
 }
+
+
+enum EdgeStatus { case hasMore, eod }
+enum VEdge { case bottom, top }
 
 
 struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where Item.ID: Hashable & Sendable {
 
 	let items: [Item]
-	@Binding var action: ChatListAction<Item.ID>?
+	@Binding var action: ChatListAction?
 	var edgeInsets: EdgeInsets = .zero
 	let cellContent: (Item) -> Content
 	let onLoadMore: (VEdge) async -> EdgeStatus
@@ -60,7 +67,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.cellContent = cellContent
 		coordinator.onLoadMore = onLoadMore
 
-		let newIDs = items.map(\.id)
+		let newIDs = items.map(\.uiID)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
 		guard newIDs != oldIDs else { return }
@@ -71,7 +78,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let oldOffset = collectionView.contentOffset.y
 
 		var itemMap: [Item.ID: Item] = [:]
-		for item in items { itemMap[item.id] = item }
+		for item in items { itemMap[item.uiID] = item }
 		coordinator.itemMap = itemMap
 
 		var snapshot = NSDiffableDataSourceSnapshot<Int, Item.ID>()
@@ -167,6 +174,13 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 }
 
 
+extension EdgeInsets {
+	static let zero = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+
+	var uiEdgeInsets: UIEdgeInsets { UIEdgeInsets(top: top, left: leading, bottom: bottom, right: trailing) }
+}
+
+
 // MARK: - Preview
 
 private let page = 10
@@ -174,14 +188,13 @@ private let cellSize = 100.0
 
 private struct Item: ChatListItem {
 	let index: Int
-	var id: Int { index }
+	var uiID: String { String(index) }
 	static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 }
 
 #Preview {
-
 	@Previewable @State var items = Item.from(range: 0..<page)
-	@Previewable @State var action: ChatListAction<Int>? = nil
+	@Previewable @State var action: ChatListAction? = nil
 
 	ChatList(items: items, action: $action) { item in
 		HStack {
