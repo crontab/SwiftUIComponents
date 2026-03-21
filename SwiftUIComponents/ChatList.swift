@@ -59,9 +59,12 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.cellContent = cellContent
 		coordinator.onLoadMore = onLoadMore
 
-		let oldFirstID = coordinator.dataSource.snapshot().itemIdentifiers.first
-		let newFirstID = items.first?.id
-		let topChanged = oldFirstID != nil && newFirstID != nil && oldFirstID != newFirstID
+		let newIDs = items.map(\.id)
+		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
+
+		guard newIDs != oldIDs else { return }
+
+		let topChanged = oldIDs.first != nil && newIDs.first != nil && oldIDs.first != newIDs.first
 
 		let oldContentHeight = collectionView.contentSize.height
 		let oldOffset = collectionView.contentOffset.y
@@ -72,7 +75,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 		var snapshot = NSDiffableDataSourceSnapshot<Int, Item.ID>()
 		snapshot.appendSections([0])
-		snapshot.appendItems(items.map(\.id), toSection: 0)
+		snapshot.appendItems(newIDs, toSection: 0)
 		coordinator.dataSource.apply(snapshot, animatingDifferences: false)
 
 		if topChanged {
@@ -88,11 +91,14 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		if let action {
 			Task {
 				switch action {
+
 					case .top(let animated):
 						collectionView.setContentOffset(.init(x: 0, y: -collectionView.adjustedContentInset.top), animated: animated)
+
 					case .bottom(let animated):
 						let y = max(collectionView.contentSize.height - collectionView.bounds.height + collectionView.adjustedContentInset.bottom, -collectionView.adjustedContentInset.top)
 						collectionView.setContentOffset(.init(x: 0, y: y), animated: animated)
+
 					case .scrollTo(let id, let animated):
 						if let indexPath = coordinator.dataSource.indexPath(for: id) {
 							collectionView.scrollToItem(at: indexPath, at: .centeredVertically, animated: animated)
