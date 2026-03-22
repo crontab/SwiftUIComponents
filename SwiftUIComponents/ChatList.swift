@@ -33,10 +33,19 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	var edgeInsets: EdgeInsets = .zero
 	@ViewBuilder let cellContent: (Item) -> Content
 	var onLoadMore: ((VEdge) async -> EdgeStatus)? = nil
+	var header: AnyView? = nil
+	var headerHeight: CGFloat = 0
 
 	func onLoadMore(_ handler: @escaping (VEdge) async -> EdgeStatus) -> Self {
 		var copy = self
 		copy.onLoadMore = handler
+		return copy
+	}
+
+	func header<H: View>(height: CGFloat, @ViewBuilder _ content: () -> H) -> Self {
+		var copy = self
+		copy.header = AnyView(content())
+		copy.headerHeight = height
 		return copy
 	}
 
@@ -61,8 +70,18 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			}
 		}
 
+		let headerKind = UICollectionView.elementKindSectionHeader
+		let headerRegistration = UICollectionView.SupplementaryRegistration<UICollectionViewCell>(elementKind: headerKind) { cell, _, _ in
+			if let headerView = coordinator.header {
+				cell.contentConfiguration = UIHostingConfiguration { headerView }.margins(.all, 0)
+			}
+		}
+
 		coordinator.dataSource = UICollectionViewDiffableDataSource<Int, Item.ID>(collectionView: collectionView) { collectionView, indexPath, itemID in
 			collectionView.dequeueConfiguredReusableCell(using: registration, for: indexPath, item: itemID)
+		}
+		coordinator.dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
+			kind == headerKind ? collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath) : nil
 		}
 
 		collectionView.delegate = coordinator
@@ -74,6 +93,8 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let coordinator = context.coordinator
 		coordinator.cellContent = cellContent
 		coordinator.onLoadMore = onLoadMore
+		coordinator.header = header
+		coordinator.headerHeight = headerHeight
 
 
 		let newIDs = items.map(\.uiId)
@@ -143,6 +164,8 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var itemMap: [Item.ID: Item] = [:]
 		var cellContent: ((Item) -> Content)!
 		var onLoadMore: ((VEdge) async -> EdgeStatus)?
+		var header: AnyView?
+		var headerHeight: CGFloat = 0
 		var edgeStatuses: [VEdge: EdgeStatus] = [:]
 		private var edgeLock = false
 
@@ -159,6 +182,10 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			let id = dataSource.itemIdentifier(for: indexPath)
 			let h = id.flatMap { itemMap[$0]?.uiHeight } ?? 0
 			return CGSize(width: collectionView.bounds.width, height: h)
+		}
+
+		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+			header != nil ? CGSize(width: collectionView.bounds.width, height: headerHeight) : .zero
 		}
 
 
@@ -226,11 +253,15 @@ private struct Item: ChatListItem {
 				.frame(height: 1)
 		}
 	}
+	.header(height: 50) {
+		Text("Chat started")
+			.foregroundStyle(.secondary)
+	}
 	.onLoadMore { edge in
 		switch edge {
 			case .top:
 				let first = items.first?.index ?? 0
-				guard first > -100 else { return .eod }
+				guard first > -20 else { return .eod }
 				try? await Task.sleep(for: .seconds(1))
 				items.insert(contentsOf: Item.from(range: (first - page)..<first), at: 0)
 				print(Date.now, "added more above")
