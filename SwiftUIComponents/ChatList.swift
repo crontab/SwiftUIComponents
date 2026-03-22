@@ -32,7 +32,13 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	@Binding var action: ChatListAction?
 	var edgeInsets: EdgeInsets = .zero
 	@ViewBuilder let cellContent: (Item) -> Content
-	let onLoadMore: (VEdge) async -> EdgeStatus
+	var onLoadMore: ((VEdge) async -> EdgeStatus)? = nil
+
+	func onLoadMore(_ handler: @escaping (VEdge) async -> EdgeStatus) -> Self {
+		var copy = self
+		copy.onLoadMore = handler
+		return copy
+	}
 
 
 	func makeUIView(context: Context) -> UICollectionView {
@@ -136,7 +142,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var dataSource: UICollectionViewDiffableDataSource<Int, Item.ID>!
 		var itemMap: [Item.ID: Item] = [:]
 		var cellContent: ((Item) -> Content)!
-		var onLoadMore: ((VEdge) async -> EdgeStatus)!
+		var onLoadMore: ((VEdge) async -> EdgeStatus)?
 		var edgeStatuses: [VEdge: EdgeStatus] = [:]
 		private var edgeLock = false
 
@@ -157,7 +163,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 
 		func edgeTest() {
-			guard !edgeLock, let cv = collectionView else { return }
+			guard !edgeLock, let onLoadMore, let cv = collectionView else { return }
 			let vicinity = max(cv.bounds.height / 2, 200)
 			let topDist = cv.contentOffset.y + cv.adjustedContentInset.top
 			let bottomDist = cv.contentSize.height - cv.contentOffset.y - cv.bounds.height + cv.adjustedContentInset.bottom
@@ -219,7 +225,8 @@ private struct Item: ChatListItem {
 				.fill(.quaternary)
 				.frame(height: 1)
 		}
-	} onLoadMore: { edge in
+	}
+	.onLoadMore { edge in
 		switch edge {
 			case .top:
 				let first = items.first?.index ?? 0

@@ -42,7 +42,8 @@ struct ChatListTest: View {
 					.fill(.quaternary)
 					.frame(height: 1)
 			}
-		} onLoadMore: { edge in
+		}
+		.onLoadMore { edge in
 			switch edge {
 				case .top:
 					let first = items.first?.index ?? 0
