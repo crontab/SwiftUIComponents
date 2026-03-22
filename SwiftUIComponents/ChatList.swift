@@ -32,15 +32,26 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	@Binding var action: ChatListAction?
 	var edgeInsets: EdgeInsets = .zero
 	@ViewBuilder let cellContent: (Item) -> Content
-	var onLoadMore: ((VEdge) async -> EdgeStatus)? = nil
-	var header: AnyView? = nil
-	var headerHeight: CGFloat = 0
+
+	private var onLoadMore: ((VEdge) async -> EdgeStatus)? = nil
+	private var header: AnyView? = nil
+	private var headerHeight: CGFloat = 0
+
+
+	init(items: [Item], action: Binding<ChatListAction?>, edgeInsets: EdgeInsets = .zero, @ViewBuilder cellContent: @escaping (Item) -> Content) {
+		self.items = items
+		self._action = action
+		self.edgeInsets = edgeInsets
+		self.cellContent = cellContent
+	}
+
 
 	func onLoadMore(_ handler: @escaping (VEdge) async -> EdgeStatus) -> Self {
 		var copy = self
 		copy.onLoadMore = handler
 		return copy
 	}
+
 
 	func header<H: View>(height: CGFloat, @ViewBuilder _ content: () -> H) -> Self {
 		var copy = self
@@ -73,13 +84,15 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let headerKind = UICollectionView.elementKindSectionHeader
 		let headerRegistration = UICollectionView.SupplementaryRegistration<UICollectionViewCell>(elementKind: headerKind) { cell, _, _ in
 			if let headerView = coordinator.header {
-				cell.contentConfiguration = UIHostingConfiguration { headerView }.margins(.all, 0)
+				cell.contentConfiguration = UIHostingConfiguration { headerView }
+					.margins(.all, 0)
 			}
 		}
 
 		coordinator.dataSource = UICollectionViewDiffableDataSource<Int, Item.ID>(collectionView: collectionView) { collectionView, indexPath, itemID in
 			collectionView.dequeueConfiguredReusableCell(using: registration, for: indexPath, item: itemID)
 		}
+
 		coordinator.dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
 			kind == headerKind ? collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath) : nil
 		}
@@ -95,7 +108,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.onLoadMore = onLoadMore
 		coordinator.header = header
 		coordinator.headerHeight = headerHeight
-
 
 		let newIDs = items.map(\.uiId)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
@@ -187,7 +199,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
 			header != nil ? CGSize(width: collectionView.bounds.width, height: headerHeight) : .zero
 		}
-
 
 		func edgeTest() {
 			guard !edgeLock, let onLoadMore, let cv = collectionView else { return }
