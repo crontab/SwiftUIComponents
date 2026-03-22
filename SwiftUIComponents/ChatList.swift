@@ -19,6 +19,7 @@ enum ChatListAction {
 	case bottom(animated: Bool)
 	case scrollTo(id: ChatListItem.ID, animated: Bool)
 	case resetEdges
+	case reconfigure(id: ChatListItem.ID, animated: Bool = false)
 }
 
 
@@ -115,9 +116,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		if newIDs != oldIDs {
 			let oldOffset = collectionView.contentOffset.y
 
-			var itemMap: [Item.ID: Item] = [:]
-			for item in items { itemMap[item.uiId] = item }
-			coordinator.itemMap = itemMap
+			updateItemMap(coordinator: coordinator)
 
 			var snapshot = NSDiffableDataSourceSnapshot<Int, Item.ID>()
 			snapshot.appendSections([0])
@@ -158,10 +157,26 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 					case .resetEdges:
 						coordinator.edgeStatuses = [:]
 						coordinator.edgeTest()
+
+					case .reconfigure(let id, let animated):
+						var snapshot = coordinator.dataSource.snapshot()
+						if snapshot.itemIdentifiers.contains(id) {
+							updateItemMap(coordinator: coordinator)
+							snapshot.reconfigureItems([id])
+							coordinator.dataSource.apply(snapshot, animatingDifferences: animated)
+							collectionView.collectionViewLayout.invalidateLayout()
+						}
 				}
 				self.action = nil
 			}
 		}
+	}
+
+
+	private func updateItemMap(coordinator: Coordinator) {
+		var itemMap: [Item.ID: Item] = [:]
+		for item in items { itemMap[item.uiId] = item }
+		coordinator.itemMap = itemMap
 	}
 
 
@@ -239,8 +254,9 @@ private let cellSize = 100.0
 
 private struct Item: ChatListItem {
 	let index: Int
+	var minimized: Bool = false
 	var uiId: String { String(index) }
-	var uiHeight: Double { cellSize }
+	var uiHeight: Double { minimized ? cellSize / 2 : cellSize }
 	static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 }
 
@@ -253,7 +269,7 @@ private struct Item: ChatListItem {
 			Text("Row \(item.index)")
 		}
 		.frame(maxWidth: .infinity)
-		.frame(height: cellSize)
+		.frame(height: item.uiHeight)
 		.background {
 			Rectangle()
 				.fill(.black.opacity(1 - Double(item.index + 100) / 100))
@@ -262,6 +278,12 @@ private struct Item: ChatListItem {
 			Rectangle()
 				.fill(.quaternary)
 				.frame(height: 1)
+		}
+		.contentShape(Rectangle())
+		.onTapGesture {
+			guard let index = items.firstIndex(where: { $0.uiId == item.uiId }) else { return }
+			items[index].minimized = !items[index].minimized
+			action = .reconfigure(id: item.uiId, animated: true)
 		}
 	}
 	.header(height: 50) {

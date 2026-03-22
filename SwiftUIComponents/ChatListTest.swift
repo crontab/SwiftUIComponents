@@ -16,8 +16,9 @@ struct ChatListTest: View {
 
 	private struct Item: ChatListItem {
 		let index: Int
+		var minimized: Bool = false
 		var uiId: String { String(index) }
-		var uiHeight: Double { cellSize }
+		var uiHeight: Double { minimized ? cellSize / 2 : cellSize }
 		static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 	}
 
@@ -32,15 +33,22 @@ struct ChatListTest: View {
 				Text("Row \(item.index)")
 			}
 			.frame(maxWidth: .infinity)
-			.frame(height: cellSize)
+			.frame(height: item.uiHeight)
 			.background {
 				Rectangle()
 					.fill(.black.opacity(1 - Double(item.index + 100) / 100))
+					.stroke(.quaternary)
 			}
-			.overlay(alignment: .bottom) {
-				Rectangle()
-					.fill(.quaternary)
-					.frame(height: 1)
+//			.overlay(alignment: .bottom) {
+//				Rectangle()
+//					.fill(.quaternary)
+//					.frame(height: 1)
+//			}
+			.contentShape(Rectangle())
+			.onTapGesture {
+				guard let index = items.firstIndex(where: { $0.uiId == item.uiId }) else { return }
+				items[index].minimized = !items[index].minimized
+				action = .reconfigure(id: item.uiId, animated: true)
 			}
 		}
 		.onLoadMore { edge in
