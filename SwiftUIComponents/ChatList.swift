@@ -33,7 +33,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	var edgeInsets: EdgeInsets = .zero
 	@ViewBuilder let cellContent: (Item) -> Content
 	let onLoadMore: (VEdge) async -> EdgeStatus
-	var onItemSeen: ((Item) -> Void)? = nil
 
 
 	func makeUIView(context: Context) -> UICollectionView {
@@ -69,14 +68,13 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let coordinator = context.coordinator
 		coordinator.cellContent = cellContent
 		coordinator.onLoadMore = onLoadMore
-		coordinator.onItemSeen = onItemSeen
+
 
 		let newIDs = items.map(\.uiId)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
 		if newIDs != oldIDs {
 			let oldOffset = collectionView.contentOffset.y
-			coordinator.seenIDs.formIntersection(newIDs)
 
 			var itemMap: [Item.ID: Item] = [:]
 			for item in items { itemMap[item.uiId] = item }
@@ -93,7 +91,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			}
 
 			coordinator.edgeTest()
-			coordinator.visibilityTest()
 		}
 
 		collectionView.contentInset = edgeInsets.uiEdgeInsets
@@ -140,20 +137,16 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var itemMap: [Item.ID: Item] = [:]
 		var cellContent: ((Item) -> Content)!
 		var onLoadMore: ((VEdge) async -> EdgeStatus)!
-		var onItemSeen: ((Item) -> Void)?
 		var edgeStatuses: [VEdge: EdgeStatus] = [:]
-		var seenIDs: Set<Item.ID> = []
 		private var edgeLock = false
 
 		func scrollViewDidScroll(_ scrollView: UIScrollView) {
 			guard scrollView.isTracking || scrollView.isDecelerating || scrollView.isDragging else { return }
 			edgeTest()
-			visibilityTest()
 		}
 
 		func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
 			edgeTest()
-			visibilityTest()
 		}
 
 		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -162,16 +155,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			return CGSize(width: collectionView.bounds.width, height: h)
 		}
 
-		func visibilityTest() {
-			guard let onItemSeen, let cv = collectionView else { return }
-			let viewportTop = cv.contentOffset.y + cv.adjustedContentInset.top
-			let viewportBottom = cv.contentOffset.y + cv.bounds.height - cv.adjustedContentInset.bottom
-			for indexPath in cv.indexPathsForVisibleItems {
-				guard let id = dataSource.itemIdentifier(for: indexPath), !seenIDs.contains(id), let item = itemMap[id], let attrs = cv.layoutAttributesForItem(at: indexPath), attrs.frame.maxY >= viewportTop, attrs.frame.maxY <= viewportBottom else { continue }
-				seenIDs.insert(id)
-				onItemSeen(item)
-			}
-		}
 
 		func edgeTest() {
 			guard !edgeLock, let cv = collectionView else { return }
@@ -253,8 +236,6 @@ private struct Item: ChatListItem {
 				print(Date.now, "added more below")
 				return .hasMore
 		}
-	} onItemSeen: { item in
-		print("seen", item.uiId)
 	}
 	.frame(maxWidth: .infinity, maxHeight: .infinity)
 	.ignoresSafeArea()
