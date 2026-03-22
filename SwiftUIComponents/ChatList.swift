@@ -134,41 +134,50 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		collectionView.contentInset = edgeInsets.uiEdgeInsets
 
 		if let action {
+			handleAction(action, collectionView: collectionView, coordinator: coordinator)
 			Task {
-				switch action {
-
-					case .top(let animated):
-						let count = coordinator.dataSource.snapshot().numberOfItems
-						if count > 0 {
-							collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: animated)
-						}
-
-					case .bottom(let animated):
-						let count = coordinator.dataSource.snapshot().numberOfItems
-						if count > 0 {
-							collectionView.scrollToItem(at: IndexPath(item: count - 1, section: 0), at: .bottom, animated: animated)
-						}
-
-					case .scrollTo(let id, let animated):
-						if let indexPath = coordinator.dataSource.indexPath(for: id) {
-							collectionView.scrollToItem(at: indexPath, at: .top, animated: animated)
-						}
-
-					case .resetEdges:
-						coordinator.edgeStatuses = [:]
-						coordinator.edgeTest()
-
-					case .reconfigure(let id, let animated):
-						var snapshot = coordinator.dataSource.snapshot()
-						if snapshot.itemIdentifiers.contains(id) {
-							updateItemMap(coordinator: coordinator)
-							snapshot.reconfigureItems([id])
-							coordinator.dataSource.apply(snapshot, animatingDifferences: animated)
-							collectionView.collectionViewLayout.invalidateLayout()
-						}
-				}
 				self.action = nil
 			}
+		}
+	}
+
+
+	func makeCoordinator() -> Coordinator {
+		Coordinator()
+	}
+
+
+	private func handleAction(_ action: ChatListAction, collectionView: UICollectionView, coordinator: Coordinator) {
+		switch action {
+			case .top(let animated):
+				let count = coordinator.dataSource.snapshot().numberOfItems
+				if count > 0 {
+					collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: animated)
+				}
+
+			case .bottom(let animated):
+				let count = coordinator.dataSource.snapshot().numberOfItems
+				if count > 0 {
+					collectionView.scrollToItem(at: IndexPath(item: count - 1, section: 0), at: .bottom, animated: animated)
+				}
+
+			case .scrollTo(let id, let animated):
+				if let indexPath = coordinator.dataSource.indexPath(for: id) {
+					collectionView.scrollToItem(at: indexPath, at: .top, animated: animated)
+				}
+
+			case .resetEdges:
+				coordinator.edgeStatuses = [:]
+				coordinator.edgeTest()
+
+			case .reconfigure(let id, let animated):
+				var snapshot = coordinator.dataSource.snapshot()
+				if snapshot.itemIdentifiers.contains(id) {
+					updateItemMap(coordinator: coordinator)
+					snapshot.reconfigureItems([id])
+					coordinator.dataSource.apply(snapshot, animatingDifferences: animated)
+					collectionView.collectionViewLayout.invalidateLayout()
+				}
 		}
 	}
 
@@ -177,11 +186,6 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var itemMap: [Item.ID: Item] = [:]
 		for item in items { itemMap[item.uiId] = item }
 		coordinator.itemMap = itemMap
-	}
-
-
-	func makeCoordinator() -> Coordinator {
-		Coordinator()
 	}
 
 
