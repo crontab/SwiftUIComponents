@@ -47,7 +47,7 @@ struct ChatListTest: View {
 			.onTapGesture {
 				guard let index = items.firstIndex(where: { $0.uiId == item.uiId }) else { return }
 				items[index].minimized = !items[index].minimized
-				action = .reconfigure(id: item.uiId, animated: true)
+				action = .reconfigure(ids: [item.uiId], animated: true)
 			}
 		}
 		.header(height: 50) {

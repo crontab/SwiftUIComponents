@@ -19,7 +19,7 @@ enum ChatListAction {
 	case bottom(animated: Bool)
 	case scrollTo(id: ChatListItem.ID, animated: Bool)
 	case resetEdges
-	case reconfigure(id: ChatListItem.ID, animated: Bool = false)
+	case reconfigure(ids: [ChatListItem.ID], animated: Bool = false)
 }
 
 
@@ -215,13 +215,14 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 				coordinator.edgeStatuses = [:]
 				coordinator.edgeTest()
 
-			case .reconfigure(let id, let animated):
+			case .reconfigure(let ids, let animated):
 				var snapshot = coordinator.dataSource.snapshot()
-				if snapshot.itemIdentifiers.contains(id) {
+				let existing = Set(snapshot.itemIdentifiers)
+				let valid = ids.filter { existing.contains($0) }
+				if !valid.isEmpty {
 					updateItemMap(coordinator: coordinator)
-					snapshot.reconfigureItems([id])
+					snapshot.reconfigureItems(valid)
 					coordinator.dataSource.apply(snapshot, animatingDifferences: animated)
-					collectionView.collectionViewLayout.invalidateLayout()
 				}
 		}
 	}
@@ -381,7 +382,7 @@ private struct Item: ChatListItem {
 		.onTapGesture {
 			guard let index = items.firstIndex(where: { $0.uiId == item.uiId }) else { return }
 			items[index].minimized = !items[index].minimized
-			action = .reconfigure(id: item.uiId, animated: true)
+			action = .reconfigure(ids: [item.uiId], animated: true)
 		}
 	}
 	.header(height: 50) {
