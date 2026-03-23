@@ -261,11 +261,15 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		func visibilityTest() {
 			guard let onVisibleItems, let cv = collectionView else { return }
 			let safeArea = cv.safeAreaInsets
-			let viewportTop = cv.contentOffset.y + safeArea.top
-			let viewportBottom = cv.contentOffset.y + cv.bounds.height - safeArea.bottom
+			let top = cv.contentOffset.y + safeArea.top
+			let bottom = cv.contentOffset.y + cv.bounds.height - safeArea.bottom
 			var ids = Set<Item.ID>()
 			for cell in cv.visibleCells {
-				if let ip = cv.indexPath(for: cell), let id = dataSource.itemIdentifier(for: ip), cell.frame.maxY >= viewportTop && cell.frame.maxY <= viewportBottom {
+				guard let ip = cv.indexPath(for: cell), let id = dataSource.itemIdentifier(for: ip) else { continue }
+				let maxY = cell.frame.maxY
+				let minY = cell.frame.minY
+				// Check if bottom is visible, or otherwise if the item is taller than the screen, then the item matches too:
+				if (maxY >= top && maxY <= bottom) || (minY <= top && maxY >= bottom) {
 					ids.insert(id)
 				}
 			}
@@ -294,7 +298,7 @@ private struct Item: ChatListItem {
 	let index: Int
 	var minimized: Bool = false
 	var uiId: String { String(index) }
-	var uiHeight: Double { minimized ? cellSize / 2 : cellSize }
+	var uiHeight: Double { minimized ? cellSize / 2 : index == 5 ? 1000 : cellSize }
 	static func from(range: Range<Int>) -> [Self] { range.map { Self(index: $0) } }
 }
 
