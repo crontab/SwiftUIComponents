@@ -267,11 +267,12 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			for cell in cv.visibleCells {
 				guard let ip = cv.indexPath(for: cell), let id = dataSource.itemIdentifier(for: ip) else { continue }
 				let maxY = cell.frame.maxY
-				let minY = cell.frame.minY
-				// Check if bottom is visible, or otherwise if the item is taller than the screen, then the item matches too:
-				if (maxY >= top && maxY <= bottom) || (minY <= top && maxY >= bottom) {
+				if maxY >= top && maxY <= bottom {
 					ids.insert(id)
 				}
+			}
+			if ids.isEmpty && !cv.visibleCells.isEmpty {
+				return
 			}
 			if ids != lastVisibleIDs {
 				lastVisibleIDs = ids
