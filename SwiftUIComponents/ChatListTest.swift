@@ -28,7 +28,7 @@ struct ChatListTest: View {
 
 
 	var body: some View {
-		ChatList(items: items, action: $action) { item in
+		ChatList(items: items, action: $action, edgeInsets: EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0)) { item in
 			HStack {
 				Text("Row \(item.index)")
 			}
@@ -37,13 +37,12 @@ struct ChatListTest: View {
 			.background {
 				Rectangle()
 					.fill(.black.opacity(1 - Double(item.index + 100) / 100))
-					.stroke(.quaternary)
 			}
-//			.overlay(alignment: .bottom) {
-//				Rectangle()
-//					.fill(.quaternary)
-//					.frame(height: 1)
-//			}
+			.overlay(alignment: .bottom) {
+				Rectangle()
+					.fill(.quaternary)
+					.frame(height: 1)
+			}
 			.contentShape(Rectangle())
 			.onTapGesture {
 				guard let index = items.firstIndex(where: { $0.uiId == item.uiId }) else { return }
@@ -51,17 +50,21 @@ struct ChatListTest: View {
 				action = .reconfigure(id: item.uiId, animated: true)
 			}
 		}
+		.header(height: 50) {
+			Text("Chat started")
+				.foregroundStyle(.secondary)
+		}
 		.onLoadMore { edge in
 			switch edge {
 				case .top:
 					let first = items.first?.index ?? 0
-					guard first > -100 else { return .eod }
+					guard first > -20 else { return .eod }
 					try? await Task.sleep(for: .seconds(1))
 					items.insert(contentsOf: Item.from(range: (first - page)..<first), at: 0)
 					print(Date.now, "added more above")
 					return .hasMore
 				case .bottom:
-					let last = items.last?.index ?? 0
+					let last = items.last?.index ?? -1
 					guard last < 100 else { return .eod }
 					try? await Task.sleep(for: .seconds(1))
 					items.append(contentsOf: Item.from(range: (last + 1)..<(last + 1 + page)))

@@ -35,6 +35,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	@ViewBuilder let cellContent: (Item) -> Content
 
 	private var onLoadMore: ((VEdge) async -> EdgeStatus)? = nil
+	private var onVisibleItems: ((Set<Item.ID>) -> Void)? = nil
 	private var header: AnyView? = nil
 	private var headerHeight: CGFloat = 0
 
@@ -50,6 +51,13 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	func onLoadMore(_ handler: @escaping (VEdge) async -> EdgeStatus) -> Self {
 		var copy = self
 		copy.onLoadMore = handler
+		return copy
+	}
+
+
+	func onVisibleItems(_ handler: @escaping (Set<Item.ID>) -> Void) -> Self {
+		var copy = self
+		copy.onVisibleItems = handler
 		return copy
 	}
 
@@ -107,6 +115,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let coordinator = context.coordinator
 		coordinator.cellContent = cellContent
 		coordinator.onLoadMore = onLoadMore
+		coordinator.onVisibleItems = onVisibleItems
 		coordinator.header = header
 		coordinator.headerHeight = headerHeight
 
@@ -138,6 +147,10 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			Task {
 				self.action = nil
 			}
+		}
+
+		Task {
+			coordinator.visibilityTest()
 		}
 	}
 
@@ -195,18 +208,22 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var itemMap: [Item.ID: Item] = [:]
 		var cellContent: ((Item) -> Content)!
 		var onLoadMore: ((VEdge) async -> EdgeStatus)?
+		var onVisibleItems: ((Set<Item.ID>) -> Void)?
 		var header: AnyView?
 		var headerHeight: CGFloat = 0
 		var edgeStatuses: [VEdge: EdgeStatus] = [:]
 		private var edgeLock = false
+		private var lastVisibleIDs = Set<Item.ID>()
 
 		func scrollViewDidScroll(_ scrollView: UIScrollView) {
 			guard scrollView.isTracking || scrollView.isDecelerating || scrollView.isDragging else { return }
 			edgeTest()
+			visibilityTest()
 		}
 
 		func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
 			edgeTest()
+			visibilityTest()
 		}
 
 		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -238,6 +255,23 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 					edgeStatuses[.bottom] = await onLoadMore(.bottom)
 					edgeLock = false
 				}
+			}
+		}
+
+		func visibilityTest() {
+			guard let onVisibleItems, let cv = collectionView else { return }
+			let safeArea = cv.safeAreaInsets
+			let viewportTop = cv.contentOffset.y + safeArea.top
+			let viewportBottom = cv.contentOffset.y + cv.bounds.height - safeArea.bottom
+			var ids = Set<Item.ID>()
+			for cell in cv.visibleCells {
+				if let ip = cv.indexPath(for: cell), let id = dataSource.itemIdentifier(for: ip), cell.frame.maxY >= viewportTop && cell.frame.maxY <= viewportBottom {
+					ids.insert(id)
+				}
+			}
+			if ids != lastVisibleIDs {
+				lastVisibleIDs = ids
+				onVisibleItems(ids)
 			}
 		}
 	}
@@ -311,6 +345,9 @@ private struct Item: ChatListItem {
 				print(Date.now, "added more below")
 				return .hasMore
 		}
+	}
+	.onVisibleItems { set in
+		print("visible:", set.compactMap(Int.init).sorted())
 	}
 	.frame(maxWidth: .infinity, maxHeight: .infinity)
 	.ignoresSafeArea()
