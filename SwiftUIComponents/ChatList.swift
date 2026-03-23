@@ -38,6 +38,8 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	private var onVisibleItems: ((Set<Item.ID>) -> Void)? = nil
 	private var header: AnyView? = nil
 	private var headerHeight: CGFloat = 0
+	private var footer: AnyView? = nil
+	private var footerHeight: CGFloat = 0
 
 
 	init(items: [Item], action: Binding<ChatListAction?>, edgeInsets: EdgeInsets = .zero, @ViewBuilder cellContent: @escaping (Item) -> Content) {
@@ -70,6 +72,14 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	}
 
 
+	func footer<H: View>(height: CGFloat, @ViewBuilder _ content: () -> H) -> Self {
+		var copy = self
+		copy.footer = AnyView(content())
+		copy.footerHeight = height
+		return copy
+	}
+
+
 	func makeUIView(context: Context) -> UICollectionView {
 		let layout = UICollectionViewFlowLayout()
 		layout.minimumLineSpacing = 0
@@ -98,12 +108,24 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 			}
 		}
 
+		let footerKind = UICollectionView.elementKindSectionFooter
+		let footerRegistration = UICollectionView.SupplementaryRegistration<UICollectionViewCell>(elementKind: footerKind) { cell, _, _ in
+			if let footerView = coordinator.footer {
+				cell.contentConfiguration = UIHostingConfiguration { footerView }
+					.margins(.all, 0)
+			}
+		}
+
 		coordinator.dataSource = UICollectionViewDiffableDataSource<Int, Item.ID>(collectionView: collectionView) { collectionView, indexPath, itemID in
 			collectionView.dequeueConfiguredReusableCell(using: registration, for: indexPath, item: itemID)
 		}
 
 		coordinator.dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
-			kind == headerKind ? collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath) : nil
+			switch kind {
+				case headerKind: collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+				case footerKind: collectionView.dequeueConfiguredReusableSupplementary(using: footerRegistration, for: indexPath)
+				default: nil
+			}
 		}
 
 		collectionView.delegate = coordinator
@@ -118,6 +140,8 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.onVisibleItems = onVisibleItems
 		coordinator.header = header
 		coordinator.headerHeight = headerHeight
+		coordinator.footer = footer
+		coordinator.footerHeight = footerHeight
 
 		let newIDs = items.map(\.uiId)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
@@ -207,10 +231,15 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var dataSource: UICollectionViewDiffableDataSource<Int, Item.ID>!
 		var itemMap: [Item.ID: Item] = [:]
 		var cellContent: ((Item) -> Content)!
+
 		var onLoadMore: ((VEdge) async -> EdgeStatus)?
 		var onVisibleItems: ((Set<Item.ID>) -> Void)?
+
 		var header: AnyView?
 		var headerHeight: CGFloat = 0
+		var footer: AnyView?
+		var footerHeight: CGFloat = 0
+
 		var edgeStatuses: [VEdge: EdgeStatus] = [:]
 		private var edgeLock = false
 		private var lastVisibleIDs = Set<Item.ID>()
@@ -234,6 +263,10 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 
 		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
 			header != nil ? CGSize(width: collectionView.bounds.width, height: headerHeight) : .zero
+		}
+
+		func collectionView(_ collectionView: UICollectionView, layout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+			footer != nil ? CGSize(width: collectionView.bounds.width, height: footerHeight) : .zero
 		}
 
 		func edgeTest() {
@@ -331,6 +364,10 @@ private struct Item: ChatListItem {
 	}
 	.header(height: 50) {
 		Text("Chat started")
+			.foregroundStyle(.secondary)
+	}
+	.footer(height: 50) {
+		Text("End of chat")
 			.foregroundStyle(.secondary)
 	}
 	.onLoadMore { edge in
