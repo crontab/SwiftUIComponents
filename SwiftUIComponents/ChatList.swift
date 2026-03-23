@@ -143,6 +143,14 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.footer = footer
 		coordinator.footerHeight = footerHeight
 
+		if headerHeight != coordinator.prevHeaderHeight || footerHeight != coordinator.prevFooterHeight {
+			updateSupplementaryView(collectionView, kind: UICollectionView.elementKindSectionHeader, content: header)
+			updateSupplementaryView(collectionView, kind: UICollectionView.elementKindSectionFooter, content: footer)
+			collectionView.collectionViewLayout.invalidateLayout()
+			coordinator.prevHeaderHeight = headerHeight
+			coordinator.prevFooterHeight = footerHeight
+		}
+
 		let newIDs = items.map(\.uiId)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
@@ -219,6 +227,17 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 	}
 
 
+	private func updateSupplementaryView(_ collectionView: UICollectionView, kind: String, content: AnyView?) {
+		let ip = IndexPath(item: 0, section: 0)
+		if let content, let cell = collectionView.supplementaryView(forElementKind: kind, at: ip) as? UICollectionViewCell {
+			cell.contentConfiguration = UIHostingConfiguration {
+				content
+			}
+			.margins(.all, 0)
+		}
+	}
+
+
 	private func updateItemMap(coordinator: Coordinator) {
 		var itemMap: [Item.ID: Item] = [:]
 		for item in items { itemMap[item.uiId] = item }
@@ -239,6 +258,8 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		var headerHeight: CGFloat = 0
 		var footer: AnyView?
 		var footerHeight: CGFloat = 0
+		var prevHeaderHeight: CGFloat = 0
+		var prevFooterHeight: CGFloat = 0
 
 		var edgeStatuses: [VEdge: EdgeStatus] = [:]
 		private var edgeLock = false
@@ -339,6 +360,7 @@ private struct Item: ChatListItem {
 #Preview {
 	@Previewable @State var items: [Item] = []
 	@Previewable @State var action: ChatListAction? = .bottom(animated: false)
+	@Previewable @State var loading: Bool = false
 
 	ChatList(items: items, action: $action, edgeInsets: EdgeInsets(top: 100, leading: 0, bottom: 100, trailing: 0)) { item in
 		HStack {
@@ -366,11 +388,14 @@ private struct Item: ChatListItem {
 		Text("Chat started")
 			.foregroundStyle(.secondary)
 	}
-	.footer(height: 50) {
-		Text("End of chat")
-			.foregroundStyle(.secondary)
+	.footer(height: loading ? 30 : 0) {
+		if loading {
+			ProgressView()
+		}
 	}
 	.onLoadMore { edge in
+		loading = true
+		defer { loading = false }
 		switch edge {
 			case .top:
 				let first = items.first?.index ?? 0
