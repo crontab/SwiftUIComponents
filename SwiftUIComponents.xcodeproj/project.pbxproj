@@ -18,6 +18,7 @@
 		36629F932DF188F90024F146 /* ChatViewTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36629F922DF188F90024F146 /* ChatViewTest.swift */; };
 		36844EB02D567A2100E793F0 /* TabBarSheetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */; };
 		368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */; };
+		369A700C2F73374100F5FBFC /* GradientTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369A700B2F73374100F5FBFC /* GradientTabBar.swift */; };
 		36A32F772F6F3C3800DCAD62 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A32F762F6F3C3800DCAD62 /* ChatView.swift */; };
 		36A32F792F6F421600DCAD62 /* ChatListTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A32F782F6F421600DCAD62 /* ChatListTest.swift */; };
 		36B147812F6EA9BF00733E86 /* ChatList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B147802F6EA9BF00733E86 /* ChatList.swift */; };
@@ -37,6 +38,7 @@
 		36629F922DF188F90024F146 /* ChatViewTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewTest.swift; sourceTree = "<group>"; };
 		36844EAF2D567A2100E793F0 /* TabBarSheetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarSheetTest.swift; sourceTree = "<group>"; };
 		368D9C4C2DF5882F006D4DC5 /* SmoothGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmoothGradient.swift; sourceTree = "<group>"; };
+		369A700B2F73374100F5FBFC /* GradientTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientTabBar.swift; sourceTree = "<group>"; };
 		36A32F762F6F3C3800DCAD62 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		36A32F782F6F421600DCAD62 /* ChatListTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListTest.swift; sourceTree = "<group>"; };
 		36B147802F6EA9BF00733E86 /* ChatList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatList.swift; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 				36B147802F6EA9BF00733E86 /* ChatList.swift */,
 				36A32F782F6F421600DCAD62 /* ChatListTest.swift */,
 				36563DF32E2BE3C50075535C /* ContentView.swift */,
+				369A700B2F73374100F5FBFC /* GradientTabBar.swift */,
 				361431EC2BB6891800FA71B4 /* SwiftUIComponentsApp.swift */,
 				361431F02BB6891900FA71B4 /* Assets.xcassets */,
 				361431F22BB6891A00FA71B4 /* Preview Content */,
@@ -183,6 +186,7 @@
 				36B147812F6EA9BF00733E86 /* ChatList.swift in Sources */,
 				361431ED2BB6891800FA71B4 /* SwiftUIComponentsApp.swift in Sources */,
 				368D9C4D2DF5882F006D4DC5 /* SmoothGradient.swift in Sources */,
+				369A700C2F73374100F5FBFC /* GradientTabBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
