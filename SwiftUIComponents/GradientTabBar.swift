@@ -63,13 +63,15 @@ struct GradientTabBar<Content: View>: View {
 struct GradientTabBarTest: View {
 	@State private var selection = 0
 
+	private static let titles = ["Home", "Search", "Notifications", "Profile"]
+
 	private static let icons = ["house.fill", "magnifyingglass", "bell.fill", "person.fill"]
 
 	var body: some View {
 		GradientTabBar(selection: $selection, tabIcons: Self.icons) {
 			ZStack {
 				ForEach(Self.icons.indices, id: \.self) { index in
-					TabPage(index: index)
+					TabPage(title: Self.titles[index])
 						.opacity(selection == index ? 1 : 0)
 				}
 			}
@@ -79,15 +81,13 @@ struct GradientTabBarTest: View {
 
 
 private struct TabPage: View {
-	let index: Int
-
-	private static let titles = ["Home", "Search", "Notifications", "Profile"]
+	let title: String
 
 	var body: some View {
 		ScrollView {
 			LazyVStack(spacing: 12) {
 				ForEach(0..<20) { item in
-					Text("\(Self.titles[index]) item \(item)")
+					Text("\(title) item \(item)")
 						.frame(maxWidth: .infinity, alignment: .leading)
 						.padding()
 						.background(.quaternary, in: .rect(cornerRadius: 12))
