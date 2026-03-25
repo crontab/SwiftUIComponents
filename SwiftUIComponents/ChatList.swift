@@ -87,6 +87,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
 		collectionView.backgroundColor = .clear
 		collectionView.alwaysBounceVertical = true
+		collectionView.keyboardDismissMode = .interactive
 
 		let coordinator = context.coordinator
 		coordinator.collectionView = collectionView
