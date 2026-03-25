@@ -7,17 +7,9 @@
 import SwiftUI
 
 
-struct WrappedVC: UIViewControllerRepresentable {
-	let viewController: UIViewController
-
-	func makeUIViewController(context: Context) -> UIViewController { viewController }
-	func updateUIViewController(_ vc: UIViewController, context: Context) {}
-}
-
-
 struct GradientTabBar<Content: View>: View {
 	@Binding var selection: Int
-	let tabIcons: [String]
+	let icons: [ImageResource]
 	@ViewBuilder var content: () -> Content
 
 	var body: some View {
@@ -27,16 +19,15 @@ struct GradientTabBar<Content: View>: View {
 
 			GeometryReader { proxy in
 				HStack(spacing: 0) {
-					ForEach(Array(tabIcons.enumerated()), id: \.offset) { index, icon in
-						Button {
-							selection = index
-						} label: {
-							Image(systemName: icon)
-								.font(.title2)
-								.frame(maxWidth: .infinity, maxHeight: .infinity)
-								.contentShape(.rect)
-						}
-						.foregroundStyle(index == selection ? .primary : .secondary)
+					ForEach(Array(icons.enumerated()), id: \.offset) { index, icon in
+						Image(icon)
+							.renderingMode(selection == index ? .original : .template)
+							.foregroundStyle(.secondary)
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
+							.contentShape(.rect)
+							.onTapGesture {
+								selection = index
+							}
 					}
 				}
 				.offset(y: proxy.safeAreaInsets.bottom / 8)
@@ -60,45 +51,37 @@ struct GradientTabBar<Content: View>: View {
 }
 
 
-struct GradientTabBarTest: View {
-	@State private var selection = 0
-
-	private static let titles = ["Home", "Search", "Notifications", "Profile"]
-
-	private static let icons = ["house.fill", "magnifyingglass", "bell.fill", "person.fill"]
-
-	var body: some View {
-		GradientTabBar(selection: $selection, tabIcons: Self.icons) {
-			ZStack {
-				ForEach(Self.icons.indices, id: \.self) { index in
-					TabPage(title: Self.titles[index])
-						.opacity(selection == index ? 1 : 0)
-				}
-			}
-		}
-	}
-}
-
-
-private struct TabPage: View {
-	let title: String
-
-	var body: some View {
-		ScrollView {
-			LazyVStack(spacing: 12) {
-				ForEach(0..<20) { item in
-					Text("\(title) item \(item)")
-						.frame(maxWidth: .infinity, alignment: .leading)
-						.padding()
-						.background(.quaternary, in: .rect(cornerRadius: 12))
-				}
-			}
-			.padding()
-		}
-	}
-}
-
-
 #Preview {
-	GradientTabBarTest()
+
+	struct TabPage: View {
+		let title: String
+
+		var body: some View {
+			ScrollView {
+				LazyVStack(spacing: 12) {
+					ForEach(0..<20) { item in
+						Text("\(title) item \(item)")
+							.frame(maxWidth: .infinity, alignment: .leading)
+							.padding()
+							.background(.quaternary, in: .rect(cornerRadius: 12))
+					}
+				}
+				.padding()
+			}
+		}
+	}
+
+	@Previewable @State var selection = 0
+
+	let titles = ["Home", "Discover", "Coach", "Library"]
+	let icons: [ImageResource] = [.tabHome, .tabDiscover, .tabCoach, .tabLibrary]
+
+	return GradientTabBar(selection: $selection, icons: icons) {
+		ZStack {
+			ForEach(titles.indices, id: \.self) { index in
+				TabPage(title: titles[index])
+					.opacity(selection == index ? 1 : 0)
+			}
+		}
+	}
 }
