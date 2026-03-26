@@ -155,7 +155,7 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		let newIDs = items.map(\.uiId)
 		let oldIDs = coordinator.dataSource.snapshot().itemIdentifiers
 
-		if newIDs != oldIDs {
+		if newIDs != oldIDs || coordinator.dataSource.snapshot().numberOfSections == 0 {
 			let oldOffset = collectionView.contentOffset.y
 
 			updateItemMap(coordinator: coordinator)
