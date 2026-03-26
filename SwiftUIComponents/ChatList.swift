@@ -144,9 +144,9 @@ struct ChatList<Content: View, Item: ChatListItem>: UIViewRepresentable where It
 		coordinator.footer = footer
 		coordinator.footerHeight = footerHeight
 
+		updateSupplementaryView(collectionView, kind: UICollectionView.elementKindSectionHeader, content: header)
+		updateSupplementaryView(collectionView, kind: UICollectionView.elementKindSectionFooter, content: footer)
 		if headerHeight != coordinator.prevHeaderHeight || footerHeight != coordinator.prevFooterHeight {
-			updateSupplementaryView(collectionView, kind: UICollectionView.elementKindSectionHeader, content: header)
-			updateSupplementaryView(collectionView, kind: UICollectionView.elementKindSectionFooter, content: footer)
 			collectionView.collectionViewLayout.invalidateLayout()
 			coordinator.prevHeaderHeight = headerHeight
 			coordinator.prevFooterHeight = footerHeight
